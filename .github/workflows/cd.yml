@@ -1,0 +1,185 @@
+name: CD
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME_BACKEND: ${{ github.repository }}/backend
+  IMAGE_NAME_FRONTEND: ${{ github.repository }}/frontend
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Extract metadata for backend
+      id: meta-backend
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=raw,value=latest,enable={{is_default_branch}}
+    
+    - name: Extract metadata for frontend
+      id: meta-frontend
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=raw,value=latest,enable={{is_default_branch}}
+    
+    - name: Build and push backend Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./backend
+        file: ./backend/Dockerfile
+        push: true
+        tags: ${{ steps.meta-backend.outputs.tags }}
+        labels: ${{ steps.meta-backend.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+    
+    - name: Build and push frontend Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./frontend
+        file: ./frontend/Dockerfile
+        push: true
+        tags: ${{ steps.meta-frontend.outputs.tags }}
+        labels: ${{ steps.meta-frontend.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main'
+    environment: staging
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Setup kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'v1.28.0'
+    
+    - name: Configure kubectl
+      run: |
+        echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > kubeconfig
+        export KUBECONFIG=kubeconfig
+    
+    - name: Update Kubernetes manifests
+      run: |
+        export KUBECONFIG=kubeconfig
+        
+        # Update image tags in Kubernetes manifests
+        sed -i "s|image: comic-strip-generator/backend:.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}:main|g" k8s/deployments/backend.yaml
+        sed -i "s|image: comic-strip-generator/frontend:.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:main|g" k8s/deployments/frontend.yaml
+        
+        # Apply manifests
+        kubectl apply -f k8s/namespace.yaml
+        kubectl apply -f k8s/secrets/ || echo "Secrets already exist"
+        kubectl apply -f k8s/deployments/
+        kubectl apply -f k8s/services/
+        kubectl apply -f k8s/ingress/
+        kubectl apply -f k8s/hpa.yaml
+        
+        # Wait for rollout
+        kubectl rollout status deployment/backend -n comic-strip-generator --timeout=300s
+        kubectl rollout status deployment/frontend -n comic-strip-generator --timeout=300s
+        
+        # Run database migrations
+        kubectl exec -n comic-strip-generator deployment/backend -- npx prisma migrate deploy
+
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: startsWith(github.ref, 'refs/tags/v')
+    environment: production
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Setup kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'v1.28.0'
+    
+    - name: Configure kubectl
+      run: |
+        echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > kubeconfig
+        export KUBECONFIG=kubeconfig
+    
+    - name: Get version from tag
+      id: get_version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+    
+    - name: Update Kubernetes manifests for production
+      run: |
+        export KUBECONFIG=kubeconfig
+        
+        # Update image tags with version
+        sed -i "s|image: comic-strip-generator/backend:.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}:${{ steps.get_version.outputs.VERSION }}|g" k8s/deployments/backend.yaml
+        sed -i "s|image: comic-strip-generator/frontend:.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:${{ steps.get_version.outputs.VERSION }}|g" k8s/deployments/frontend.yaml
+        
+        # Apply manifests
+        kubectl apply -f k8s/namespace.yaml
+        kubectl apply -f k8s/secrets/ || echo "Secrets already exist"
+        kubectl apply -f k8s/deployments/
+        kubectl apply -f k8s/services/
+        kubectl apply -f k8s/ingress/
+        kubectl apply -f k8s/hpa.yaml
+        
+        # Wait for rollout
+        kubectl rollout status deployment/backend -n comic-strip-generator --timeout=600s
+        kubectl rollout status deployment/frontend -n comic-strip-generator --timeout=300s
+        
+        # Run database migrations
+        kubectl exec -n comic-strip-generator deployment/backend -- npx prisma migrate deploy
+    
+    - name: Create GitHub Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.get_version.outputs.VERSION }}
+        release_name: Release ${{ steps.get_version.outputs.VERSION }}
+        body: |
+          ## Changes in this Release
+          - See commit history for detailed changes
+          
+          ## Docker Images
+          - Backend: `${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}:${{ steps.get_version.outputs.VERSION }}`
+          - Frontend: `${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:${{ steps.get_version.outputs.VERSION }}`
+        draft: false
+        prerelease: false

@@ -1,0 +1,115 @@
+name: Security Scan
+
+on:
+  schedule:
+    - cron: '0 2 * * 1' # Weekly on Monday at 2 AM
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  dependency-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
+    - name: Backend dependency scan
+      working-directory: ./backend
+      run: |
+        npm ci
+        npm audit --audit-level high
+    
+    - name: Frontend dependency scan
+      working-directory: ./frontend
+      run: |
+        npm ci
+        npm audit --audit-level high
+
+  codeql-analysis:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'javascript', 'typescript' ]
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: ${{ matrix.language }}
+    
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v3
+    
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
+
+  docker-security-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Build backend image for scanning
+      run: docker build -t comic-strip-generator/backend:scan ./backend
+    
+    - name: Build frontend image for scanning
+      run: docker build -t comic-strip-generator/frontend:scan ./frontend
+    
+    - name: Run Trivy vulnerability scanner on backend
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: 'comic-strip-generator/backend:scan'
+        format: 'sarif'
+        output: 'trivy-backend.sarif'
+    
+    - name: Run Trivy vulnerability scanner on frontend
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: 'comic-strip-generator/frontend:scan'
+        format: 'sarif'
+        output: 'trivy-frontend.sarif'
+    
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-backend.sarif'
+    
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-frontend.sarif'
+
+  secrets-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: TruffleHog OSS
+      uses: trufflesecurity/trufflehog@main
+      with:
+        path: ./
+        base: main
+        head: HEAD
+        extra_args: --debug --only-verified
