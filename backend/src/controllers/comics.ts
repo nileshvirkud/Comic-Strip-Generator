@@ -1,10 +1,10 @@
 import { Response, NextFunction } from 'express';
 import { body, param } from 'express-validator';
-import { prisma } from '@/services/database';
-import { AuthenticatedRequest, ComicGenerationRequest } from '@/types';
-import { ValidationError, NotFoundError, AuthorizationError } from '@/utils/errors';
-import { logger } from '@/utils/logger';
-import { addScriptGenerationJob } from '@/services/queue';
+import { prisma } from './services/database';
+import { AuthenticatedRequest, ComicGenerationRequest } from './types';
+import { ValidationError, NotFoundError, AuthorizationError } from './utils/errors';
+import { logger } from './utils/logger';
+import { addScriptGenerationJob } from './services/queue';
 
 export const generateComicValidation = [
   body('prompt')

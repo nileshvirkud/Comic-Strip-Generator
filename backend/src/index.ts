@@ -5,22 +5,22 @@ import morgan from 'morgan';
 import compression from 'compression';
 import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
-import { config } from '@/utils/config';
-import { logger } from '@/utils/logger';
-import { errorHandler, notFoundHandler } from '@/middleware/errorHandler';
-import { generalLimiter } from '@/middleware/rateLimiter';
+import { config } from './utils/config';
+import { logger } from './utils/logger';
+import { errorHandler, notFoundHandler } from './middleware/errorHandler';
+import { generalLimiter } from './middleware/rateLimiter';
 
 // Routes
-import authRoutes from '@/routes/auth';
-import comicsRoutes from '@/routes/comics';
-import templatesRoutes from '@/routes/templates';
-import usersRoutes from '@/routes/users';
+import authRoutes from './routes/auth';
+import comicsRoutes from './routes/comics';
+import templatesRoutes from './routes/templates';
+import usersRoutes from './routes/users';
 
 // Services
-import { initializeDatabase } from '@/services/database';
-import { initializeRedis } from '@/services/redis';
-import { initializeQueues } from '@/services/queue';
-import { initializeSocket } from '@/services/socket';
+import { initializeDatabase } from './services/database';
+import { initializeRedis } from './services/redis';
+import { initializeQueues } from './services/queue';
+import { initializeSocket } from './services/socket';
 
 const app = express();
 const server = createServer(app);

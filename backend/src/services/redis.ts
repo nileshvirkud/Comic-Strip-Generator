@@ -1,6 +1,6 @@
 import { createClient } from 'redis';
-import { config } from '@/utils/config';
-import { logger } from '@/utils/logger';
+import { config } from './utils/config';
+import { logger } from './utils/logger';
 
 export const redisClient = createClient({
   url: config.redis.url,

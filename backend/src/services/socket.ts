@@ -1,8 +1,8 @@
 import { Server as SocketIOServer } from 'socket.io';
 import jwt from 'jsonwebtoken';
-import { config } from '@/utils/config';
-import { logger } from '@/utils/logger';
-import { SocketUser } from '@/types';
+import { config } from './utils/config';
+import { logger } from './utils/logger';
+import { SocketUser } from './types';
 
 let io: SocketIOServer;
 const connectedUsers = new Map<string, string>(); // userId -> socketId

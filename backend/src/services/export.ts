@@ -1,9 +1,9 @@
 import puppeteer from 'puppeteer';
 import path from 'path';
 import fs from 'fs/promises';
-import { Comic, Panel, ExportOptions } from '@/types';
-import { logger } from '@/utils/logger';
-import { AppError } from '@/utils/errors';
+import { Comic, Panel, ExportOptions } from './types';
+import { logger } from './utils/logger';
+import { AppError } from './utils/errors';
 
 export class ExportService {
   private async generateComicHTML(comic: Comic): Promise<string> {

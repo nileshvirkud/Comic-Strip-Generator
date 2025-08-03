@@ -1,8 +1,8 @@
 import { Job } from 'bull';
-import { prisma } from '@/services/database';
-import { logger } from '@/utils/logger';
-import { QueueJobData } from '@/types';
-import { emitToUser } from '@/services/socket';
+import { prisma } from './services/database';
+import { logger } from './utils/logger';
+import { QueueJobData } from './types';
+import { emitToUser } from './services/socket';
 
 export const processComicAssembly = async (job: Job<QueueJobData>) => {
   const { comicId, userId, options } = job.data;

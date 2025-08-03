@@ -1,8 +1,8 @@
 import Bull, { Queue, Job } from 'bull';
-import { redisClient } from '@/services/redis';
-import { config } from '@/utils/config';
-import { logger } from '@/utils/logger';
-import { QueueJobData } from '@/types';
+import { redisClient } from './services/redis';
+import { config } from './utils/config';
+import { logger } from './utils/logger';
+import { QueueJobData } from './types';
 
 // Queue definitions
 export let scriptGenerationQueue: Queue<QueueJobData>;
@@ -62,9 +62,9 @@ export const initializeQueues = async () => {
 };
 
 const setupQueueProcessors = async () => {
-  const { processScriptGeneration } = await import('@/workers/scriptWorker');
-  const { processImageGeneration } = await import('@/workers/imageWorker');
-  const { processComicAssembly } = await import('@/workers/assemblyWorker');
+  const { processScriptGeneration } = await import('../workers/scriptWorker');
+  const { processImageGeneration } = await import('../workers/imageWorker');
+  const { processComicAssembly } = await import('../workers/assemblyWorker');
 
   // Process script generation jobs
   scriptGenerationQueue.process('generate-script', 5, processScriptGeneration);

@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { prisma } from '@/services/database';
-import { NotFoundError } from '@/utils/errors';
+import { prisma } from './services/database';
+import { NotFoundError } from './utils/errors';
 
 export const getTemplates = async (req: Request, res: Response, next: NextFunction) => {
   try {

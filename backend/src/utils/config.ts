@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import { AIServiceConfig } from '@/types';
+import { AIServiceConfig } from './types';
 
 dotenv.config();
 
