@@ -1,9 +1,9 @@
 import React, { useState, useCallback } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { Comic, Panel } from '@/types';
+import { Comic, Panel } from '../types';
 import ComicPanel from './ComicPanel';
-import { comicsAPI } from '@/services/api';
+import { comicsAPI } from '../services/api';
 import toast from 'react-hot-toast';
 
 interface ComicEditorProps {

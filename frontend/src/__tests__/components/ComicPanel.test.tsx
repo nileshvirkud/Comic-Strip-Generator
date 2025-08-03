@@ -2,8 +2,8 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import ComicPanel from '@/components/ComicPanel';
-import { Panel } from '@/types';
+import ComicPanel from '../components/ComicPanel';
+import { Panel } from '../types';
 
 const mockPanel: Panel = {
   id: 'panel-1',

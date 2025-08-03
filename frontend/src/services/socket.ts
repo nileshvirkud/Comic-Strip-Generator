@@ -1,5 +1,5 @@
 import { io, Socket } from 'socket.io-client';
-import { GenerationJob } from '@/types';
+import { GenerationJob } from '../types';
 
 class SocketService {
   private socket: Socket | null = null;

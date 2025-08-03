@@ -1,0 +1,29 @@
+
+auth:
+  postgresPassword: Allr1ght # Replace with a strong, secure password
+  database: comicsdb
+
+primary:
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: standard # Replace with your cluster's StorageClass
+
+replica:
+  replicaCount: 2
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: standard # Replace with your cluster's StorageClass
+
+repmgr:
+  enabled: true
+
+pgpool:
+  enabled: true
+  replicaCount: 2
+  persistence:
+    enabled: true
+    size: 5Gi
+    storageClass: standard # Replace with your cluster's StorageClass
+

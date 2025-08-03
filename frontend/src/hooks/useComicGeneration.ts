@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Comic, ComicGenerationRequest, GenerationJob } from '@/types';
-import { comicsAPI } from '@/services/api';
-import socketService from '@/services/socket';
+import { Comic, ComicGenerationRequest, GenerationJob } from '../types';
+import { comicsAPI } from '../services/api';
+import socketService from '../services/socket';
 import toast from 'react-hot-toast';
 
 interface UseComicGenerationReturn {

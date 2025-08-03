@@ -1,22 +1,22 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { AuthProvider, useAuth } from '@/hooks/useAuth';
+import { AuthProvider, useAuth } from './hooks/useAuth';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
 // Components
-import Header from '@/components/Header';
-import LoadingSpinner from '@/components/LoadingSpinner';
+import Header from './components/Header';
+import LoadingSpinner from './components/LoadingSpinner';
 
 // Pages
-import HomePage from '@/pages/HomePage';
-import LoginPage from '@/pages/LoginPage';
-import RegisterPage from '@/pages/RegisterPage';
-import DashboardPage from '@/pages/DashboardPage';
-import ComicGeneratorPage from '@/pages/ComicGeneratorPage';
-import ComicEditorPage from '@/pages/ComicEditorPage';
-import ComicViewerPage from '@/pages/ComicViewerPage';
+import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import DashboardPage from './pages/DashboardPage';
+import ComicGeneratorPage from './pages/ComicGeneratorPage';
+import ComicEditorPage from './pages/ComicEditorPage';
+import ComicViewerPage from './pages/ComicViewerPage';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuth();

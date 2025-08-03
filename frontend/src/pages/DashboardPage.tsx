@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Comic } from '@/types';
-import { comicsAPI } from '@/services/api';
-import LoadingSpinner from '@/components/LoadingSpinner';
+import { Comic } from '../types';
+import { comicsAPI } from '../services/api';
+import LoadingSpinner from '../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 
 const DashboardPage: React.FC = () => {
@@ -28,7 +28,7 @@ const DashboardPage: React.FC = () => {
   };
 
   const handleDeleteComic = async (comicId: string) => {
-    if (!confirm('Are you sure you want to delete this comic?')) {
+    if (!window.confirm('Are you sure you want to delete this comic?')) {
       return;
     }
 

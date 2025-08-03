@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import { Template, ComicGenerationRequest } from '@/types';
-import { templatesAPI } from '@/services/api';
-import { useComicGeneration } from '@/hooks/useComicGeneration';
-import LoadingSpinner from '@/components/LoadingSpinner';
+import { Template, ComicGenerationRequest } from '../types';
+import { templatesAPI } from '../services/api';
+import { useComicGeneration } from '../hooks/useComicGeneration';
+import LoadingSpinner from '../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 
 interface GeneratorForm {

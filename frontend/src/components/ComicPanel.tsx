@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
-import { Panel } from '@/types';
+import { Panel } from '../types';
 
 interface ComicPanelProps {
   panel: Panel;

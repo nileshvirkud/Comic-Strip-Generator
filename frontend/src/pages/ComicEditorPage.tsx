@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Comic } from '@/types';
-import { comicsAPI } from '@/services/api';
-import ComicEditor from '@/components/ComicEditor';
-import LoadingSpinner from '@/components/LoadingSpinner';
+import { Comic } from '../types';
+import { comicsAPI } from '../services/api';
+import ComicEditor from '../components/ComicEditor';
+import LoadingSpinner from '../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 
 const ComicEditorPage: React.FC = () => {

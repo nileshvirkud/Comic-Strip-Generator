@@ -1,7 +1,7 @@
 import React from 'react';
 import { renderHook, act } from '@testing-library/react';
-import { AuthProvider, useAuth } from '@/hooks/useAuth';
-import * as api from '@/services/api';
+import { AuthProvider, useAuth } from '../hooks/useAuth';
+import * as api from '../services/api';
 
 // Mock the API
 jest.mock('@/services/api');
