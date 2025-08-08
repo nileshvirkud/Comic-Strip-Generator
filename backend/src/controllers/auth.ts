@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import { body } from 'express-validator';
-import { prisma } from './services/database';
-import { AuthService } from './services/auth';
-import { ValidationError, ConflictError, AuthenticationError } from './utils/errors';
-import { logger } from './utils/logger';
+import { prisma } from '../services/database';
+import { AuthService } from '../services/auth';
+import { ValidationError, ConflictError, AuthenticationError } from '../utils/errors';
+import { logger } from '../utils/logger';
 
 export const registerValidation = [
   body('email')

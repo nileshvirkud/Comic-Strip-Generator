@@ -1,7 +1,7 @@
 import multer from 'multer';
 import path from 'path';
-import { config } from './utils/config';
-import { FileUploadError } from './utils/errors';
+import { config } from '../utils/config';
+import { FileUploadError } from '../utils/errors';
 
 // Configure storage
 const storage = multer.diskStorage({

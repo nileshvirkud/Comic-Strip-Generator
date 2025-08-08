@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { config } from './utils/config';
+import { config } from '../utils/config';
 import { User } from './types';
 
 export class AuthService {

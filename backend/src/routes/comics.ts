@@ -7,12 +7,12 @@ import {
   updateComic,
   deleteComic,
   generateComicValidation,
-} from './controllers/comics';
-import { exportComic, exportComicValidation } from './controllers/export';
-import { authenticate } from './middleware/auth';
-import { validate } from './middleware/validation';
-import { generationLimiter } from './middleware/rateLimiter';
-import { upload, handleUploadError } from './middleware/upload';
+} from '../controllers/comics';
+import { exportComic, exportComicValidation } from '../controllers/export';
+import { authenticate } from '../middleware/auth';
+import { validate } from '../middleware/validation';
+import { generationLimiter } from '../middleware/rateLimiter';
+import { upload, handleUploadError } from '../middleware/upload';
 
 const router = Router();
 

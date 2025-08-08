@@ -10,10 +10,12 @@ COPY tsconfig.json ./
 # Install all dependencies (including dev for build)
 RUN npm ci
 
-# Copy source code
+# Copy source code and Prisma schema
 COPY src/ ./src/
+COPY prisma/ ./prisma/
 
-# Build the application
+# Generate Prisma client and build the application
+RUN npx prisma generate
 RUN npm run build
 
 # Production stage
@@ -27,9 +29,13 @@ RUN addgroup -g 1001 -S nodejs && \
 
 # Copy package files
 COPY package*.json ./
+COPY prisma/ ./prisma/
 
 # Install production dependencies only
 RUN npm ci --omit=dev && npm cache clean --force
+
+# Generate Prisma client for production
+RUN npx prisma generate
 
 # Copy built application
 COPY --from=builder --chown=nextjs:nodejs /app/dist ./dist

@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
-import { config } from './utils/config';
-import { AIServiceError } from './utils/errors';
-import { logger } from './utils/logger';
+import { config } from '../../utils/config';
+import { AIServiceError } from '../../utils/errors';
+import { logger } from '../../utils/logger';
 
 interface RunwayMLJob {
   id: string;

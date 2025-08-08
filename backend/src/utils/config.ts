@@ -1,20 +1,38 @@
 import dotenv from 'dotenv';
+import path from 'path';
 import { AIServiceConfig } from './types';
 
+// Load .env from project root - try multiple paths for development and production
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 dotenv.config();
 
 const requiredEnvVars = [
   'DATABASE_URL',
   'JWT_SECRET',
-  'OPENAI_API_KEY',
   'REDIS_URL'
 ];
 
+// Optional in development, required in production
+const optionalInDevEnvVars = [
+  'OPENAI_API_KEY'
+];
+
 const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+const missingOptionalVars = optionalInDevEnvVars.filter(envVar => !process.env[envVar]);
 
 if (missingEnvVars.length > 0) {
   console.error(`Missing required environment variables: ${missingEnvVars.join(', ')}`);
   process.exit(1);
+}
+
+if (missingOptionalVars.length > 0 && process.env.NODE_ENV !== 'development') {
+  console.error(`Missing required environment variables for production: ${missingOptionalVars.join(', ')}`);
+  process.exit(1);
+}
+
+if (missingOptionalVars.length > 0) {
+  console.warn(`Warning: Missing optional environment variables (will use mock/fallback): ${missingOptionalVars.join(', ')}`);
 }
 
 export const config = {
@@ -43,7 +61,7 @@ export const config = {
   
   ai: {
     openai: {
-      apiKey: process.env.OPENAI_API_KEY!,
+      apiKey: process.env.OPENAI_API_KEY || 'mock-key-for-development',
       model: process.env.OPENAI_MODEL || 'gpt-4',
       maxTokens: parseInt(process.env.OPENAI_MAX_TOKENS || '2000', 10),
     },

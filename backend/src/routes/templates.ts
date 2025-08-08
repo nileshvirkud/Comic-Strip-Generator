@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { getTemplates, getTemplate } from './controllers/templates';
-import { optionalAuth } from './middleware/auth';
+import { getTemplates, getTemplate } from '../controllers/templates';
+import { optionalAuth } from '../middleware/auth';
 
 const router = Router();
 

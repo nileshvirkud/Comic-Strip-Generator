@@ -1,6 +1,6 @@
 import rateLimit from 'express-rate-limit';
-import { config } from './utils/config';
-import { RateLimitError } from './utils/errors';
+import { config } from '../utils/config';
+import { RateLimitError } from '../utils/errors';
 
 // General rate limiter
 export const generalLimiter = rateLimit({

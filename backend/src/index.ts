@@ -15,6 +15,7 @@ import authRoutes from './routes/auth';
 import comicsRoutes from './routes/comics';
 import templatesRoutes from './routes/templates';
 import usersRoutes from './routes/users';
+import healthRoutes from './routes/health';
 
 // Services
 import { initializeDatabase } from './services/database';
@@ -87,6 +88,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/comics', comicsRoutes);
 app.use('/api/templates', templatesRoutes);
+app.use('/api/health', healthRoutes);
 
 // Static files
 app.use('/uploads', express.static('uploads'));

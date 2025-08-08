@@ -1,7 +1,7 @@
 import Bull, { Queue, Job } from 'bull';
 import { redisClient } from './services/redis';
-import { config } from './utils/config';
-import { logger } from './utils/logger';
+import { config } from '../utils/config';
+import { logger } from '../utils/logger';
 import { QueueJobData } from './types';
 
 // Queue definitions

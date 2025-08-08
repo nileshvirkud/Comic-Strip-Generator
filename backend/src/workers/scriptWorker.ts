@@ -1,10 +1,10 @@
 import { Job } from 'bull';
-import { prisma } from './services/database';
-import { openaiService } from './services/ai';
-import { logger } from './utils/logger';
+import { prisma } from '../services/database';
+import { openaiService } from '../services/ai';
+import { logger } from '../utils/logger';
 import { QueueJobData } from './types';
-import { addImageGenerationJob } from './services/queue';
-import { emitToUser } from './services/socket';
+import { addImageGenerationJob } from '../services/queue';
+import { emitToUser } from '../services/socket';
 
 export const processScriptGeneration = async (job: Job<QueueJobData>) => {
   const { comicId, userId, prompt, options } = job.data;
