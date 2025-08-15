@@ -41,10 +41,10 @@ api.interceptors.response.use(
 // Auth API
 export const authAPI = {
   register: (email: string, password: string): Promise<AxiosResponse<{ user: User; token: string }>> =>
-    api.post('/users/register', { email, password }),
+    api.post('/auth/register', { email, password }),
   
   login: (email: string, password: string): Promise<AxiosResponse<{ user: User; token: string }>> =>
-    api.post('/users/login', { email, password }),
+    api.post('/auth/login', { email, password }),
   
   profile: (): Promise<AxiosResponse<User>> =>
     api.get('/users/profile'),
@@ -52,17 +52,32 @@ export const authAPI = {
 
 // Comics API
 export const comicsAPI = {
-  generate: (request: ComicGenerationRequest): Promise<AxiosResponse<{ comic: Comic; jobId: string }>> =>
-    api.post('/comics/generate', request, {
+  generate: (request: ComicGenerationRequest): Promise<AxiosResponse<{ success: boolean; data: { comic: Comic; jobId: string } }>> => {
+    const formData = new FormData();
+    formData.append('prompt', request.prompt);
+    formData.append('genre', request.genre);
+    formData.append('style', request.style);
+    formData.append('panelCount', request.panelCount.toString());
+    formData.append('templateId', request.templateId);
+    
+    // Add character references if provided
+    if (request.characterReferences) {
+      request.characterReferences.forEach((file, index) => {
+        formData.append('characterReferences', file);
+      });
+    }
+    
+    return api.post('/comics/generate', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
-    }),
+    });
+  },
   
-  getComic: (id: string): Promise<AxiosResponse<Comic>> =>
+  getComic: (id: string): Promise<AxiosResponse<{ success: boolean; data: Comic }>> =>
     api.get(`/comics/${id}`),
   
-  updateComic: (id: string, updates: Partial<Comic>): Promise<AxiosResponse<Comic>> =>
+  updateComic: (id: string, updates: Partial<Comic>): Promise<AxiosResponse<{ success: boolean; data: Comic }>> =>
     api.put(`/comics/${id}`, updates),
   
   deleteComic: (id: string): Promise<AxiosResponse<void>> =>
@@ -73,19 +88,19 @@ export const comicsAPI = {
       responseType: 'blob',
     }),
   
-  getStatus: (id: string): Promise<AxiosResponse<{ status: string; progress: number; jobs: GenerationJob[] }>> =>
+  getStatus: (id: string): Promise<AxiosResponse<{ success: boolean; data: { status: string; progress: number; jobs: GenerationJob[] } }>> =>
     api.get(`/comics/${id}/status`),
   
-  getUserComics: (): Promise<AxiosResponse<Comic[]>> =>
+  getUserComics: (): Promise<AxiosResponse<{ success: boolean; data: { comics: Comic[]; pagination: any } }>> =>
     api.get('/comics'),
 };
 
 // Templates API
 export const templatesAPI = {
-  getTemplates: (): Promise<AxiosResponse<Template[]>> =>
+  getTemplates: (): Promise<AxiosResponse<{ success: boolean; data: Template[] }>> =>
     api.get('/templates'),
   
-  getTemplate: (id: string): Promise<AxiosResponse<Template>> =>
+  getTemplate: (id: string): Promise<AxiosResponse<{ success: boolean; data: Template }>> =>
     api.get(`/templates/${id}`),
 };
 

@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
           const response = await authAPI.profile();
           setAuthState({
-            user: response.data,
+            user: response.data.data, // Extract from nested data structure
             token,
             isAuthenticated: true,
             isLoading: false,
@@ -57,7 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (email: string, password: string) => {
     try {
       const response = await authAPI.login(email, password);
-      const { user, token } = response.data;
+      const { user, token } = response.data.data; // Extract from nested data structure
       
       localStorage.setItem('token', token);
       setAuthState({
@@ -76,7 +76,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const register = async (email: string, password: string) => {
     try {
       const response = await authAPI.register(email, password);
-      const { user, token } = response.data;
+      const { user, token } = response.data.data; // Extract from nested data structure
       
       localStorage.setItem('token', token);
       setAuthState({

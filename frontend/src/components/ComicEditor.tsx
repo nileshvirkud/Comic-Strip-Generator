@@ -28,7 +28,7 @@ const ComicEditor: React.FC<ComicEditorProps> = ({ comic, onComicUpdate }) => {
         panels: updatedPanels,
       });
       
-      onComicUpdate(updatedComic.data);
+      onComicUpdate(updatedComic.data.data);
       toast.success('Panel updated successfully');
     } catch (error) {
       toast.error('Failed to update panel');
@@ -58,7 +58,7 @@ const ComicEditor: React.FC<ComicEditorProps> = ({ comic, onComicUpdate }) => {
         panels: panels,
       });
       
-      onComicUpdate(updatedComic.data);
+      onComicUpdate(updatedComic.data.data);
       toast.success('Layout saved successfully');
       setIsEditing(false);
     } catch (error) {

@@ -43,7 +43,7 @@ export const useComicGeneration = (): UseComicGenerationReturn => {
   const handleGenerationComplete = useCallback(async (data: { comicId: string }) => {
     try {
       const response = await comicsAPI.getComic(data.comicId);
-      setComic(response.data);
+      setComic(response.data.data); // Extract from nested structure
       setIsGenerating(false);
       setProgress(100);
       toast.success('Comic generation completed!');
@@ -79,10 +79,10 @@ export const useComicGeneration = (): UseComicGenerationReturn => {
       setJobs([]);
 
       const response = await comicsAPI.generate(request);
-      setComic(response.data.comic);
+      setComic(response.data.data.comic);
       
       // Subscribe to real-time updates
-      socketService.subscribeToComic(response.data.comic.id);
+      socketService.subscribeToComic(response.data.data.comic.id);
       
       toast.success('Comic generation started!');
     } catch (err: any) {
@@ -95,14 +95,15 @@ export const useComicGeneration = (): UseComicGenerationReturn => {
   const getComicStatus = async (comicId: string) => {
     try {
       const response = await comicsAPI.getStatus(comicId);
-      setProgress(response.data.progress);
-      setJobs(response.data.jobs);
+      const statusData = response.data.data; // Extract from nested structure
+      setProgress(statusData.progress);
+      setJobs(statusData.jobs);
       
-      if (response.data.status === 'completed') {
+      if (statusData.status === 'completed') {
         setIsGenerating(false);
         const comicResponse = await comicsAPI.getComic(comicId);
-        setComic(comicResponse.data);
-      } else if (response.data.status === 'generating') {
+        setComic(comicResponse.data.data); // Extract from nested structure
+      } else if (statusData.status === 'generating') {
         setIsGenerating(true);
         socketService.subscribeToComic(comicId);
       }

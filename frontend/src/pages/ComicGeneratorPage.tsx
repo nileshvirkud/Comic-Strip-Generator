@@ -36,7 +36,7 @@ const ComicGeneratorPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (templateId) {
+    if (templateId && Array.isArray(templates)) {
       const template = templates.find(t => t.id === templateId);
       setSelectedTemplate(template || null);
     }
@@ -51,10 +51,11 @@ const ComicGeneratorPage: React.FC = () => {
   const fetchTemplates = async () => {
     try {
       const response = await templatesAPI.getTemplates();
-      setTemplates(response.data);
+      setTemplates(response.data.data || []); // Extract from nested structure with fallback
     } catch (error) {
       toast.error('Failed to load templates');
       console.error('Fetch templates error:', error);
+      setTemplates([]); // Set empty array on error to prevent map error
     } finally {
       setIsLoadingTemplates(false);
     }
@@ -62,11 +63,16 @@ const ComicGeneratorPage: React.FC = () => {
 
   const onSubmit = async (data: GeneratorForm) => {
     try {
+      if (!selectedTemplate) {
+        toast.error('Please select a template');
+        return;
+      }
+      
       const request: ComicGenerationRequest = {
         prompt: data.prompt,
         genre: data.genre,
         style: data.style,
-        panelCount: selectedTemplate?.panelCount || 4,
+        panelCount: selectedTemplate.panelCount,
         templateId: data.templateId,
       };
 
@@ -208,27 +214,45 @@ const ComicGeneratorPage: React.FC = () => {
           <div className="bg-white rounded-lg shadow-sm p-6">
             <h2 className="text-xl font-semibold mb-4">Choose Layout</h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {templates.map((template) => (
-                <label key={template.id} className="cursor-pointer group">
-                  <input
-                    {...register('templateId', { required: 'Template is required' })}
-                    type="radio"
-                    value={template.id}
-                    className="sr-only"
-                  />
-                  <div className={`border-2 rounded-lg p-4 transition-all ${
-                    selectedTemplate?.id === template.id
-                      ? 'border-primary-500 bg-primary-50'
-                      : 'border-gray-200 group-hover:border-gray-300'
-                  }`}>
-                    <div className="aspect-video bg-gray-100 rounded mb-3 flex items-center justify-center">
-                      <span className="text-gray-500 text-sm">Preview</span>
+              {Array.isArray(templates) && templates.length > 0 ? (
+                templates.map((template) => (
+                  <label key={template.id} className="cursor-pointer group">
+                    <input
+                      {...register('templateId', { required: 'Template is required' })}
+                      type="radio"
+                      value={template.id}
+                      className="sr-only"
+                    />
+                    <div className={`border-2 rounded-lg p-4 transition-all ${
+                      selectedTemplate?.id === template.id
+                        ? 'border-primary-500 bg-primary-50'
+                        : 'border-gray-200 group-hover:border-gray-300'
+                    }`}>
+                      <div className="aspect-video bg-gray-100 rounded mb-3 flex items-center justify-center">
+                        <span className="text-gray-500 text-sm">Preview</span>
+                      </div>
+                      <h3 className="font-medium text-gray-900">{template.name}</h3>
+                      <p className="text-sm text-gray-600">{template.panelCount} panels</p>
                     </div>
-                    <h3 className="font-medium text-gray-900">{template.name}</h3>
-                    <p className="text-sm text-gray-600">{template.panelCount} panels</p>
+                  </label>
+                ))
+              ) : (
+                <div className="col-span-full text-center py-8">
+                  <div className="text-gray-500">
+                    <svg className="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <p className="text-sm">No templates available</p>
+                    <button
+                      type="button"
+                      onClick={fetchTemplates}
+                      className="mt-2 text-primary-600 hover:text-primary-500 text-sm font-medium"
+                    >
+                      Try again
+                    </button>
                   </div>
-                </label>
-              ))}
+                </div>
+              )}
             </div>
             {errors.templateId && (
               <p className="mt-2 text-sm text-red-600">{errors.templateId.message}</p>

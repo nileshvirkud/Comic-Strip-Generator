@@ -21,7 +21,7 @@ const ComicEditorPage: React.FC = () => {
   const fetchComic = async (comicId: string) => {
     try {
       const response = await comicsAPI.getComic(comicId);
-      setComic(response.data);
+      setComic(response.data.data); // Extract from nested structure
     } catch (error: any) {
       toast.error('Failed to load comic');
       if (error.response?.status === 404) {
@@ -55,7 +55,7 @@ const ComicEditorPage: React.FC = () => {
     );
   }
 
-  if (comic.status !== 'completed') {
+  if (comic.status && comic.status.toLowerCase() !== 'completed') {
     return (
       <div className="text-center py-12">
         <h2 className="text-xl font-semibold text-gray-900 mb-2">Comic not ready for editing</h2>

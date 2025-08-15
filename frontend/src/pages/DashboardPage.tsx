@@ -18,10 +18,11 @@ const DashboardPage: React.FC = () => {
     try {
       setIsLoading(true);
       const response = await comicsAPI.getUserComics();
-      setComics(response.data.comics);
+      setComics(response.data.data.comics || []); // Extract from nested data and provide fallback
     } catch (error) {
       toast.error('Failed to load comics');
       console.error('Fetch comics error:', error);
+      setComics([]); // Set empty array on error to prevent undefined
     } finally {
       setIsLoading(false);
     }
@@ -42,7 +43,8 @@ const DashboardPage: React.FC = () => {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string | undefined) => {
+    if (!status) return 'bg-gray-100 text-gray-800';
     switch (status.toLowerCase()) {
       case 'completed':
         return 'bg-green-100 text-green-800';
@@ -57,7 +59,7 @@ const DashboardPage: React.FC = () => {
 
   const filteredComics = comics.filter(comic => {
     if (filter === 'all') return true;
-    return comic.status.toLowerCase() === filter;
+    return comic.status && comic.status.toLowerCase() === filter;
   });
 
   if (isLoading) {
@@ -150,7 +152,7 @@ const DashboardPage: React.FC = () => {
                 {/* Status Badge */}
                 <div className="absolute top-2 right-2">
                   <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(comic.status)}`}>
-                    {comic.status}
+                    {comic.status || 'Unknown'}
                   </span>
                 </div>
               </div>
@@ -177,7 +179,7 @@ const DashboardPage: React.FC = () => {
                   >
                     View
                   </Link>
-                  {comic.status === 'completed' && (
+                  {comic.status.toLowerCase() === 'completed' && (
                     <Link
                       to={`/comics/${comic.id}/edit`}
                       className="flex-1 btn btn-outline text-sm"

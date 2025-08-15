@@ -20,7 +20,8 @@ export const generateComicValidation = [
     .isInt({ min: 3, max: 8 })
     .withMessage('Panel count must be between 3 and 8'),
   body('templateId')
-    .isUUID()
+    .isLength({ min: 20, max: 30 })
+    .matches(/^c[a-z0-9]+$/)
     .withMessage('Valid template ID is required'),
 ];
 
@@ -40,8 +41,9 @@ export const generateComic = async (req: AuthenticatedRequest, res: Response, ne
       throw new ValidationError('Template not found');
     }
 
-    if (template.panelCount !== panelCount) {
-      throw new ValidationError('Panel count does not match template');
+    const numPanelCount = parseInt(panelCount.toString());
+    if (template.panelCount !== numPanelCount) {
+      throw new ValidationError(`Panel count does not match template. Expected: ${template.panelCount}, Received: ${numPanelCount} (original: ${panelCount}, type: ${typeof panelCount})`);
     }
 
     // Create comic record
@@ -267,6 +269,29 @@ export const updateComic = async (req: AuthenticatedRequest, res: Response, next
     for (const key of allowedUpdates) {
       if (updates[key] !== undefined) {
         filteredUpdates[key] = updates[key];
+      }
+    }
+
+    // Handle panels update separately if provided
+    if (updates.panels) {
+      // First delete existing panels for this comic
+      await prisma.panels.deleteMany({
+        where: { comicId: id },
+      });
+
+      // Create new panels with updated data
+      for (const panel of updates.panels) {
+        await prisma.panels.create({
+          data: {
+            comicId: id,
+            panelNumber: panel.panelNumber,
+            sceneDescription: panel.sceneDescription,
+            dialog: panel.dialog,
+            position: panel.position,
+            imageUrl: panel.imageUrl,
+            imagePrompt: panel.imagePrompt,
+          },
+        });
       }
     }
 

@@ -21,7 +21,7 @@ const ComicViewerPage: React.FC = () => {
   }, [id]);
 
   useEffect(() => {
-    if (comic && comic.status === 'generating' && id) {
+    if (comic && comic.status && comic.status.toLowerCase() === 'generating' && id) {
       // Poll for status updates
       const interval = setInterval(() => {
         getComicStatus(id);
@@ -34,13 +34,15 @@ const ComicViewerPage: React.FC = () => {
   const fetchComic = async (comicId: string) => {
     try {
       const response = await comicsAPI.getComic(comicId);
-      setComic(response.data);
+      const comic = response.data.data; // Extract from nested structure
+      setComic(comic);
       
       // If still generating, get status
-      if (response.data.status === 'generating') {
+      if (comic.status && comic.status.toLowerCase() === 'generating') {
         await getComicStatus(comicId);
       }
     } catch (error: any) {
+      console.error('Comic fetch error:', error);
       toast.error('Failed to load comic');
       if (error.response?.status === 404) {
         navigate('/dashboard');
@@ -111,7 +113,7 @@ const ComicViewerPage: React.FC = () => {
           >
             Back to Dashboard
           </button>
-          {comic.status === 'completed' && (
+          {comic.status && comic.status.toLowerCase() === 'completed' && (
             <>
               <button
                 onClick={() => handleExport('png')}
@@ -137,7 +139,7 @@ const ComicViewerPage: React.FC = () => {
       </div>
 
       {/* Status Banner */}
-      {comic.status !== 'completed' && (
+      {comic.status && comic.status.toLowerCase() !== 'completed' && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
           <div className="flex items-center">
             <div className="flex-shrink-0">
@@ -148,7 +150,7 @@ const ComicViewerPage: React.FC = () => {
             </div>
             <div className="ml-3 flex-1">
               <h3 className="text-sm font-medium text-blue-800">
-                {comic.status === 'generating' ? 'Generating Comic' : comic.status === 'failed' ? 'Generation Failed' : 'Processing'}
+                {comic.status && comic.status.toLowerCase() === 'generating' ? 'Generating Comic' : comic.status && comic.status.toLowerCase() === 'failed' ? 'Generation Failed' : 'Processing'}
               </h3>
               <div className="mt-2 text-sm text-blue-700">
                 <p>Your comic is being created by our AI systems. This usually takes 2-5 minutes.</p>
@@ -188,7 +190,7 @@ const ComicViewerPage: React.FC = () => {
       )}
 
       {/* Comic Display */}
-      {comic.status === 'completed' && comic.panels ? (
+      {comic.status && comic.status.toLowerCase() === 'completed' && comic.panels ? (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div 
             className="relative bg-white"
@@ -222,12 +224,21 @@ const ComicViewerPage: React.FC = () => {
                         src={panel.imageUrl}
                         alt={`Panel ${panel.panelNumber}`}
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          target.nextElementSibling?.classList.remove('hidden');
+                        }}
                       />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-500">
-                        <span>No image</span>
+                    ) : null}
+                    <div className={`w-full h-full flex items-center justify-center text-gray-500 ${panel.imageUrl ? 'hidden' : ''}`}>
+                      <div className="text-center">
+                        <svg className="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span className="text-sm">{panel.imageUrl ? 'Image failed to load' : 'No image'}</span>
                       </div>
-                    )}
+                    </div>
 
                     {/* Speech Bubble */}
                     {panel.dialog && (
@@ -241,7 +252,7 @@ const ComicViewerPage: React.FC = () => {
             </div>
           </div>
         </div>
-      ) : comic.status === 'failed' ? (
+      ) : comic.status && comic.status.toLowerCase() === 'failed' ? (
         <div className="text-center py-12">
           <div className="w-24 h-24 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
             <svg className="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -263,7 +274,7 @@ const ComicViewerPage: React.FC = () => {
       )}
 
       {/* Comic Info */}
-      {comic.status === 'completed' && (
+      {comic.status && comic.status.toLowerCase() === 'completed' && (
         <div className="mt-8 bg-gray-50 rounded-lg p-6">
           <h3 className="text-lg font-semibold mb-4">Comic Details</h3>
           <div className="grid md:grid-cols-2 gap-6">

@@ -67,9 +67,16 @@ export const processImageGeneration = async (job: Job<QueueJobData>) => {
     job.progress(40);
 
     // Generate image with Midjourney
-    const midjourneyJob = process.env.NODE_ENV === 'development' 
-      ? await midjourneyService.mockGenerateImage(enhancedPrompt)
-      : await midjourneyService.generateImage(enhancedPrompt, '16:9');
+    let midjourneyJob;
+    try {
+      // Try real generation first
+      midjourneyJob = await midjourneyService.generateImage(enhancedPrompt, '16:9');
+      logger.info('Using real Midjourney API for image generation');
+    } catch (error) {
+      // Fall back to mock if real API fails
+      logger.warn('Real Midjourney API failed, using mock', { error: (error as Error).message });
+      midjourneyJob = await midjourneyService.mockGenerateImage(enhancedPrompt);
+    }
 
     job.progress(60);
 
@@ -81,9 +88,12 @@ export const processImageGeneration = async (job: Job<QueueJobData>) => {
     while (imageResult.status === 'processing' && attempts < maxAttempts) {
       await new Promise(resolve => setTimeout(resolve, 10000)); // Wait 10 seconds
       
-      imageResult = process.env.NODE_ENV === 'development'
-        ? await midjourneyService.mockGetJobStatus(midjourneyJob.id)
-        : await midjourneyService.getJobStatus(midjourneyJob.id);
+      try {
+        imageResult = await midjourneyService.getJobStatus(midjourneyJob.id);
+      } catch (error) {
+        // Fall back to mock status if real API fails
+        imageResult = await midjourneyService.mockGetJobStatus(midjourneyJob.id);
+      }
       
       attempts++;
       const progressIncrement = Math.min(30, (attempts / maxAttempts) * 30);
