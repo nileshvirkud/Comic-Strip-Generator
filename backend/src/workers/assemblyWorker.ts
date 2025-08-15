@@ -6,14 +6,14 @@ import { emitToUser } from '../services/socket';
 
 export const processComicAssembly = async (job: Job<QueueJobData>) => {
   const { comicId, userId, options } = job.data;
+  let jobRecord: any = null;
   
   try {
     logger.info('Starting comic assembly', { comicId, jobId: job.id });
 
-    // Create job record
-    await prisma.generationJob.create({
+    // Create job record (let Prisma generate the ID)
+    jobRecord = await prisma.generationJob.create({
       data: {
-        id: job.id.toString(),
         comicId,
         jobType: 'ASSEMBLY',
         status: 'PROCESSING',
@@ -26,7 +26,7 @@ export const processComicAssembly = async (job: Job<QueueJobData>) => {
     emitToUser(userId, 'generation-progress', {
       comicId,
       job: {
-        id: job.id.toString(),
+        id: jobRecord.id,
         jobType: 'assembly',
         status: 'processing',
         progress: 10,
@@ -84,14 +84,14 @@ export const processComicAssembly = async (job: Job<QueueJobData>) => {
 
     // Update job status
     await prisma.generationJob.update({
-      where: { id: job.id.toString() },
+      where: { id: jobRecord.id },
       data: {
         status: 'COMPLETED',
         progress: 100,
         result: {
           status: 'completed',
           panelCount: comic.panels.length,
-          assemblyTime: new Date(),
+          assemblyTime: new Date().toISOString(),
         },
       },
     });
@@ -115,14 +115,18 @@ export const processComicAssembly = async (job: Job<QueueJobData>) => {
   } catch (error) {
     logger.error('Comic assembly failed', { comicId, jobId: job.id, error });
 
-    // Update job status
-    await prisma.generationJob.update({
-      where: { id: job.id.toString() },
-      data: {
-        status: 'FAILED',
-        error: (error as Error).message,
-      },
-    });
+    // Update job status if record was created
+    if (jobRecord) {
+      await prisma.generationJob.update({
+        where: { id: jobRecord.id },
+        data: {
+          status: 'FAILED',
+          error: (error as Error).message,
+        },
+      }).catch((updateError) => {
+        logger.error('Failed to update job status', { jobId: jobRecord.id, updateError });
+      });
+    }
 
     // Update comic status
     await prisma.comics.update({

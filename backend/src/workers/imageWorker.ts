@@ -8,6 +8,7 @@ import { emitToUser } from '../services/socket';
 
 export const processImageGeneration = async (job: Job<QueueJobData>) => {
   const { comicId, userId, panelData, options } = job.data;
+  let jobRecord: any = null;
   
   try {
     logger.info('Starting image generation', { 
@@ -16,10 +17,9 @@ export const processImageGeneration = async (job: Job<QueueJobData>) => {
       panelId: panelData?.panelId 
     });
 
-    // Create job record
-    const jobRecord = await prisma.generationJob.create({
+    // Create job record (let Prisma generate the ID)
+    jobRecord = await prisma.generationJob.create({
       data: {
-        id: job.id.toString(),
         comicId,
         jobType: 'IMAGE',
         status: 'PROCESSING',
@@ -32,7 +32,7 @@ export const processImageGeneration = async (job: Job<QueueJobData>) => {
     emitToUser(userId, 'generation-progress', {
       comicId,
       job: {
-        id: job.id.toString(),
+        id: jobRecord.id,
         jobType: 'image',
         status: 'processing',
         progress: 10,
@@ -68,6 +68,7 @@ export const processImageGeneration = async (job: Job<QueueJobData>) => {
 
     // Generate image with Midjourney
     let midjourneyJob;
+    let isUsingMock = false;
     try {
       // Try real generation first
       midjourneyJob = await midjourneyService.generateImage(enhancedPrompt, '16:9');
@@ -76,6 +77,7 @@ export const processImageGeneration = async (job: Job<QueueJobData>) => {
       // Fall back to mock if real API fails
       logger.warn('Real Midjourney API failed, using mock', { error: (error as Error).message });
       midjourneyJob = await midjourneyService.mockGenerateImage(enhancedPrompt);
+      isUsingMock = true;
     }
 
     job.progress(60);
@@ -83,16 +85,25 @@ export const processImageGeneration = async (job: Job<QueueJobData>) => {
     // Poll for completion (in production, this would be handled by webhooks)
     let imageResult = midjourneyJob;
     let attempts = 0;
-    const maxAttempts = 30; // 5 minutes with 10-second intervals
+    const maxAttempts = isUsingMock ? 2 : 30; // For mock, just wait a short time
 
     while (imageResult.status === 'processing' && attempts < maxAttempts) {
-      await new Promise(resolve => setTimeout(resolve, 10000)); // Wait 10 seconds
+      const waitTime = isUsingMock ? 3000 : 10000; // 3s for mock, 10s for real
+      await new Promise(resolve => setTimeout(resolve, waitTime));
       
       try {
-        imageResult = await midjourneyService.getJobStatus(midjourneyJob.id);
+        if (isUsingMock) {
+          imageResult = await midjourneyService.mockGetJobStatus(midjourneyJob.id);
+        } else {
+          imageResult = await midjourneyService.getJobStatus(midjourneyJob.id);
+        }
       } catch (error) {
-        // Fall back to mock status if real API fails
-        imageResult = await midjourneyService.mockGetJobStatus(midjourneyJob.id);
+        logger.error('Failed to get job status', { jobId: midjourneyJob.id, error });
+        // If real API fails, mark as failed instead of continuing to poll
+        if (!isUsingMock) {
+          imageResult = { ...imageResult, status: 'failed', error: (error as Error).message };
+          break;
+        }
       }
       
       attempts++;
@@ -102,7 +113,7 @@ export const processImageGeneration = async (job: Job<QueueJobData>) => {
       emitToUser(userId, 'generation-progress', {
         comicId,
         job: {
-          id: job.id.toString(),
+          id: jobRecord.id,
           jobType: 'image',
           status: 'processing',
           progress: 60 + progressIncrement,
@@ -126,7 +137,7 @@ export const processImageGeneration = async (job: Job<QueueJobData>) => {
 
     // Update job status
     await prisma.generationJob.update({
-      where: { id: job.id.toString() },
+      where: { id: jobRecord.id },
       data: {
         status: 'COMPLETED',
         progress: 100,
@@ -139,7 +150,7 @@ export const processImageGeneration = async (job: Job<QueueJobData>) => {
     emitToUser(userId, 'generation-progress', {
       comicId,
       job: {
-        id: job.id.toString(),
+        id: jobRecord.id,
         jobType: 'image',
         status: 'completed',
         progress: 100,
@@ -183,14 +194,18 @@ export const processImageGeneration = async (job: Job<QueueJobData>) => {
       error 
     });
 
-    // Update job status
-    await prisma.generationJob.update({
-      where: { id: job.id.toString() },
-      data: {
-        status: 'FAILED',
-        error: (error as Error).message,
-      },
-    });
+    // Update job status if record was created
+    if (jobRecord) {
+      await prisma.generationJob.update({
+        where: { id: jobRecord.id },
+        data: {
+          status: 'FAILED',
+          error: (error as Error).message,
+        },
+      }).catch((updateError) => {
+        logger.error('Failed to update job status', { jobId: jobRecord.id, updateError });
+      });
+    }
 
     // Emit error
     emitToUser(userId, 'generation-error', {

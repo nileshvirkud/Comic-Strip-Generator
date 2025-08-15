@@ -1,7 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { body, param } from 'express-validator';
 import { prisma } from '../services/database';
-import { AuthenticatedRequest, ComicGenerationRequest } from './types';
+import { AuthenticatedRequest, ComicGenerationRequest } from '../types';
 import { ValidationError, NotFoundError, AuthorizationError } from '../utils/errors';
 import { logger } from '../utils/logger';
 import { addScriptGenerationJob } from '../services/queue';
@@ -28,7 +28,9 @@ export const generateComicValidation = [
 export const generateComic = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
     const userId = req.user!.id;
-    const { prompt, genre, style, panelCount, templateId }: ComicGenerationRequest = req.body;
+    // When using FormData with multer, all fields come as strings
+    const { prompt, genre, style, panelCount: panelCountStr, templateId } = req.body;
+    const panelCount = parseInt(panelCountStr, 10);
 
     logger.info('Starting comic generation', { userId, prompt: prompt.substring(0, 50) });
 
@@ -41,9 +43,8 @@ export const generateComic = async (req: AuthenticatedRequest, res: Response, ne
       throw new ValidationError('Template not found');
     }
 
-    const numPanelCount = parseInt(panelCount.toString());
-    if (template.panelCount !== numPanelCount) {
-      throw new ValidationError(`Panel count does not match template. Expected: ${template.panelCount}, Received: ${numPanelCount} (original: ${panelCount}, type: ${typeof panelCount})`);
+    if (template.panelCount !== panelCount) {
+      throw new ValidationError(`Panel count does not match template. Expected: ${template.panelCount}, Received: ${panelCount}`);
     }
 
     // Create comic record
