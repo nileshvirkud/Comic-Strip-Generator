@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 
 // Mock environment variables for tests
 process.env.NODE_ENV = 'test';
-process.env.DATABASE_URL = 'postgresql://postgres:postgres@localhost:5432/comic_strip_generator_test';
+process.env.DATABASE_URL = 'postgresql://postgres:postgres@localhost:5432/comic_strip_generator_dev';
 process.env.REDIS_URL = 'redis://localhost:6379';
 process.env.JWT_SECRET = 'test-secret';
 process.env.OPENAI_API_KEY = 'test-openai-key';

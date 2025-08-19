@@ -290,7 +290,7 @@ export const updateComic = async (req: AuthenticatedRequest, res: Response, next
             dialog: panel.dialog,
             position: panel.position,
             imageUrl: panel.imageUrl,
-            imagePrompt: panel.imagePrompt,
+            midjourneyPrompt: panel.midjourneyPrompt,
           },
         });
       }

@@ -2,7 +2,7 @@ import { Response, NextFunction } from 'express';
 import { body } from 'express-validator';
 import { prisma } from '../services/database';
 import { ExportService } from '../services/export';
-import { AuthenticatedRequest, ExportOptions } from './types';
+import { AuthenticatedRequest, ExportOptions } from '../types';
 import { NotFoundError, AuthorizationError } from '../utils/errors';
 import { logger } from '../utils/logger';
 

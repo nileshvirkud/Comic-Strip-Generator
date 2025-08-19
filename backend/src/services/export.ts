@@ -1,7 +1,7 @@
 import puppeteer from 'puppeteer';
 import path from 'path';
 import fs from 'fs/promises';
-import { Comic, Panel, ExportOptions } from './types';
+import { Comic, Panel, ExportOptions } from '../types';
 import { logger } from '../utils/logger';
 import { AppError } from '../utils/errors';
 

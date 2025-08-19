@@ -1,5 +1,6 @@
 import React from 'react';
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, waitFor } from '@testing-library/react';
+import { act } from 'react';
 import { AuthProvider, useAuth } from '../../hooks/useAuth';
 import * as api from '../../services/api';
 
@@ -35,16 +36,16 @@ describe('useAuth', () => {
   });
 
   it('should initialize with unauthenticated state', async () => {
-    const { result, waitForNextUpdate } = renderHook(() => useAuth(), { wrapper });
+    const { result } = renderHook(() => useAuth(), { wrapper });
 
-    expect(result.current.isLoading).toBe(true);
+    // Wait for the initial auth check to complete
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
     expect(result.current.isAuthenticated).toBe(false);
     expect(result.current.user).toBe(null);
     expect(result.current.token).toBe(null);
-
-    await waitForNextUpdate();
-
-    expect(result.current.isLoading).toBe(false);
   });
 
   it('should login successfully', async () => {
@@ -57,11 +58,15 @@ describe('useAuth', () => {
     const mockToken = 'mock-token';
 
     mockedApi.authAPI.login.mockResolvedValue({
-      data: { user: mockUser, token: mockToken },
+      data: { data: { user: mockUser, token: mockToken } },
     } as any);
 
-    const { result, waitForNextUpdate } = renderHook(() => useAuth(), { wrapper });
-    await waitForNextUpdate(); // Wait for initial load
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    
+    // Wait for initial auth check to complete
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
 
     await act(async () => {
       await result.current.login('test@example.com', 'password');
@@ -77,8 +82,12 @@ describe('useAuth', () => {
     const mockError = new Error('Invalid credentials');
     mockedApi.authAPI.login.mockRejectedValue(mockError);
 
-    const { result, waitForNextUpdate } = renderHook(() => useAuth(), { wrapper });
-    await waitForNextUpdate(); // Wait for initial load
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    
+    // Wait for initial auth check to complete
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
 
     await expect(
       act(async () => {
@@ -100,11 +109,15 @@ describe('useAuth', () => {
     const mockToken = 'mock-token';
 
     mockedApi.authAPI.register.mockResolvedValue({
-      data: { user: mockUser, token: mockToken },
+      data: { data: { user: mockUser, token: mockToken } },
     } as any);
 
-    const { result, waitForNextUpdate } = renderHook(() => useAuth(), { wrapper });
-    await waitForNextUpdate(); // Wait for initial load
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    
+    // Wait for initial auth check to complete
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
 
     await act(async () => {
       await result.current.register('test@example.com', 'password');
@@ -126,11 +139,15 @@ describe('useAuth', () => {
     const mockToken = 'mock-token';
 
     mockedApi.authAPI.login.mockResolvedValue({
-      data: { user: mockUser, token: mockToken },
+      data: { data: { user: mockUser, token: mockToken } },
     } as any);
 
-    const { result, waitForNextUpdate } = renderHook(() => useAuth(), { wrapper });
-    await waitForNextUpdate(); // Wait for initial load
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    
+    // Wait for initial auth check to complete
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
 
     // Login first
     await act(async () => {
@@ -161,14 +178,16 @@ describe('useAuth', () => {
 
     localStorageMock.getItem.mockReturnValue(mockToken);
     mockedApi.authAPI.profile.mockResolvedValue({
-      data: mockUser,
+      data: { data: mockUser },
     } as any);
 
     const { result, waitForNextUpdate } = renderHook(() => useAuth(), { wrapper });
 
     expect(result.current.isLoading).toBe(true);
 
-    await waitForNextUpdate();
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
 
     expect(result.current.isLoading).toBe(false);
     expect(result.current.isAuthenticated).toBe(true);
@@ -186,7 +205,9 @@ describe('useAuth', () => {
 
     expect(result.current.isLoading).toBe(true);
 
-    await waitForNextUpdate();
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
 
     expect(result.current.isLoading).toBe(false);
     expect(result.current.isAuthenticated).toBe(false);
