@@ -144,11 +144,11 @@ describe('Auth Controller', () => {
     let userId: string;
 
     beforeEach(async () => {
-      // Create a test user
+      // Create a test user for profile tests
       const hashedPassword = await AuthService.hashPassword('TestPassword123!');
       const user = await prisma.user.create({
         data: {
-          email: 'test@example.com',
+          email: `profile-test-${Date.now()}@example.com`,
           passwordHash: hashedPassword,
           subscriptionTier: 'free',
         },

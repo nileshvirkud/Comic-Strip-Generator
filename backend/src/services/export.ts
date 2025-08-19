@@ -261,10 +261,10 @@ export class ExportService {
       await page.setContent(html, { waitUntil: 'networkidle0' });
 
       // Wait for images to load
-      await page.waitForFunction(() => {
+      await page.waitForFunction(`() => {
         const images = Array.from(document.querySelectorAll('img'));
         return images.every(img => img.complete);
-      }, { timeout: 30000 });
+      }`, { timeout: 30000 });
 
       // Take screenshot
       const screenshot = await page.screenshot({
@@ -330,10 +330,10 @@ export class ExportService {
       await page.setContent(html, { waitUntil: 'networkidle0' });
 
       // Wait for images to load
-      await page.waitForFunction(() => {
+      await page.waitForFunction(`() => {
         const images = Array.from(document.querySelectorAll('img'));
         return images.every(img => img.complete);
-      }, { timeout: 30000 });
+      }`, { timeout: 30000 });
 
       // Take screenshot
       const screenshot = await page.screenshot({

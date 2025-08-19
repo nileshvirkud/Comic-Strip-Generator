@@ -9,11 +9,11 @@ describe('Comics Controller', () => {
   let templateId: string;
 
   beforeEach(async () => {
-    // Create a test user
+    // Create a test user for comics tests
     const hashedPassword = await AuthService.hashPassword('TestPassword123!');
     const user = await prisma.user.create({
       data: {
-        email: 'test@example.com',
+        email: `comics-test-${Date.now()}@example.com`,
         passwordHash: hashedPassword,
         subscriptionTier: 'free',
       },

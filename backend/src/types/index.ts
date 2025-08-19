@@ -19,6 +19,8 @@ export interface Comic {
   metadata: ComicMetadata;
   createdAt: Date;
   updatedAt: Date;
+  panels?: Panel[];
+  template?: Template;
 }
 
 export interface Panel {

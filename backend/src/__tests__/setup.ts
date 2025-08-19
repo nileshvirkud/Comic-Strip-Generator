@@ -15,7 +15,7 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  // Clean up data before each test
+  // Clean up data before each test in correct order (foreign key constraints)
   await prisma.generationJob.deleteMany();
   await prisma.panel.deleteMany();
   await prisma.comics.deleteMany();
