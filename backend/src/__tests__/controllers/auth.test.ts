@@ -154,7 +154,7 @@ describe('Auth Controller', () => {
         },
       });
       userId = user.id;
-      token = AuthService.generateToken(user);
+      token = AuthService.generateToken(user as any);
     });
 
     it('should return user profile with valid token', async () => {

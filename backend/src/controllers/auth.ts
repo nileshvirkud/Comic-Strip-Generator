@@ -53,7 +53,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     });
 
     // Generate token
-    const token = AuthService.generateToken(user);
+    const token = AuthService.generateToken(user as any);
 
     logger.info('User registered successfully', { userId: user.id, email: user.email });
 
@@ -96,7 +96,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     }
 
     // Generate token
-    const token = AuthService.generateToken(user);
+    const token = AuthService.generateToken(user as any);
 
     logger.info('User logged in successfully', { userId: user.id, email: user.email });
 

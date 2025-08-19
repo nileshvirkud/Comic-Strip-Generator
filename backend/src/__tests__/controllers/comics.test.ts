@@ -19,7 +19,7 @@ describe('Comics Controller', () => {
       },
     });
     userId = user.id;
-    token = AuthService.generateToken(user);
+    token = AuthService.generateToken(user as any);
 
     // Create a test template
     const template = await prisma.template.create({
@@ -163,7 +163,7 @@ describe('Comics Controller', () => {
           subscriptionTier: 'free',
         },
       });
-      const otherToken = AuthService.generateToken(otherUser);
+      const otherToken = AuthService.generateToken(otherUser as any);
 
       const response = await request(app)
         .get(`/api/comics/${comicId}`)
@@ -312,7 +312,7 @@ describe('Comics Controller', () => {
           subscriptionTier: 'free',
         },
       });
-      const otherToken = AuthService.generateToken(otherUser);
+      const otherToken = AuthService.generateToken(otherUser as any);
 
       const response = await request(app)
         .delete(`/api/comics/${comicId}`)

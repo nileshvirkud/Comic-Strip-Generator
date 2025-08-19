@@ -56,5 +56,13 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://localhost:3001"
+  "proxy": "http://localhost:3001",
+  "jest": {
+    "transformIgnorePatterns": [
+      "node_modules/(?!(react-dnd|dnd-core|@react-dnd|react-dnd-html5-backend|axios)/)"
+    ],
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/src/$1"
+    }
+  }
 }

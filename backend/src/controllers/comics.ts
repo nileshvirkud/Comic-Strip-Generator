@@ -276,13 +276,13 @@ export const updateComic = async (req: AuthenticatedRequest, res: Response, next
     // Handle panels update separately if provided
     if (updates.panels) {
       // First delete existing panels for this comic
-      await prisma.panels.deleteMany({
+      await prisma.panel.deleteMany({
         where: { comicId: id },
       });
 
       // Create new panels with updated data
       for (const panel of updates.panels) {
-        await prisma.panels.create({
+        await prisma.panel.create({
           data: {
             comicId: id,
             panelNumber: panel.panelNumber,

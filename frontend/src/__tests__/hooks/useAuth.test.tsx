@@ -1,10 +1,10 @@
 import React from 'react';
 import { renderHook, act } from '@testing-library/react';
-import { AuthProvider, useAuth } from '../hooks/useAuth';
-import * as api from '../services/api';
+import { AuthProvider, useAuth } from '../../hooks/useAuth';
+import * as api from '../../services/api';
 
 // Mock the API
-jest.mock('@/services/api');
+jest.mock('../../services/api');
 const mockedApi = api as jest.Mocked<typeof api>;
 
 // Mock localStorage
@@ -19,7 +19,7 @@ Object.defineProperty(window, 'localStorage', {
 });
 
 // Mock socket service
-jest.mock('@/services/socket', () => ({
+jest.mock('../../services/socket', () => ({
   connect: jest.fn(),
   disconnect: jest.fn(),
 }));

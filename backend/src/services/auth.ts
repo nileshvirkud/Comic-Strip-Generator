@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { config } from '../utils/config';
-import { User } from './types';
+import { User } from '../types';
 
 export class AuthService {
   static async hashPassword(password: string): Promise<string> {
@@ -20,17 +20,17 @@ export class AuthService {
       subscriptionTier: user.subscriptionTier,
     };
 
-    return jwt.sign(payload, config.jwt.secret, {
-      expiresIn: config.jwt.expiresIn,
+    return jwt.sign(payload, config.jwt.secret as string, {
+      expiresIn: '7d',
     });
   }
 
   static verifyToken(token: string): any {
-    return jwt.verify(token, config.jwt.secret);
+    return jwt.verify(token, config.jwt.secret as string);
   }
 
   static generateRefreshToken(userId: string): string {
-    return jwt.sign({ userId }, config.jwt.secret, {
+    return jwt.sign({ userId }, config.jwt.secret as string, {
       expiresIn: '30d',
     });
   }

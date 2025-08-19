@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import path from 'path';
-import { AIServiceConfig } from './types';
+import { AIServiceConfig } from '../types';
 
 // Load .env from project root - try multiple paths for development and production
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });

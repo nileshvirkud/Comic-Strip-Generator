@@ -1,42 +1,64 @@
 # Comic Strip Generator 🎨
 
-A production-ready web application that uses AI services (GPT-4, Midjourney, RunwayML) to generate professional comic strips from user prompts. Built with React, Node.js, PostgreSQL, and Redis, fully containerized with Docker and deployable to Kubernetes.
+**Transform your ideas into stunning comic strips with the power of AI!**
+
+The Comic Strip Generator is a production-ready web application that leverages cutting-edge AI services (OpenAI GPT-4, Midjourney, RunwayML) to automatically generate professional-quality comic strips from simple text prompts. Whether you're a content creator, educator, marketer, or just someone with a story to tell, this platform makes comic creation accessible to everyone.
+
+## 📖 What is Comic Strip Generator?
+
+Comic Strip Generator is an intelligent platform that combines the creativity of AI with user-friendly tools to create engaging visual narratives. Simply describe your story or idea, and watch as advanced AI algorithms:
+
+1. **Generate compelling storylines** with GPT-4's natural language processing
+2. **Create consistent character artwork** using Midjourney's image generation
+3. **Enhance visual quality** with RunwayML's style transfer technology
+4. **Provide interactive editing tools** for fine-tuning your comic
+
+Perfect for:
+- 🎓 **Educators** creating engaging learning materials
+- 📱 **Content Creators** developing social media content  
+- 🏢 **Businesses** crafting marketing narratives
+- 🎨 **Artists** exploring AI-assisted creativity
+- 📚 **Writers** visualizing their stories
 
 ## 🌟 Features
 
-### Core Functionality
-- **AI-Powered Story Generation**: GPT-4 creates compelling storylines and dialogue
-- **Professional Artwork**: Midjourney generates consistent, high-quality comic panels
-- **Image Enhancement**: RunwayML provides style transfer and character consistency
-- **Interactive Panel Editor**: Drag-and-drop interface for customizing layouts
-- **Print-Ready Export**: Generate PDFs optimized for professional printing
-- **Real-Time Progress**: WebSocket-based generation progress updates
+### 🎯 Core Functionality
+- **🤖 AI-Powered Story Generation**: GPT-4 creates compelling storylines and dialogue from your prompts
+- **🎨 Professional Artwork**: Midjourney generates consistent, high-quality comic panels
+- **✨ Image Enhancement**: RunwayML provides style transfer and character consistency
+- **📝 Interactive Panel Editor**: Drag-and-drop interface for customizing layouts and dialogue
+- **📄 Print-Ready Export**: Generate high-resolution PDFs optimized for professional printing
+- **⚡ Real-Time Progress**: WebSocket-based live updates during comic generation
+- **🎭 Multiple Art Styles**: Choose from various comic styles and themes
+- **👥 Character Consistency**: AI maintains character appearance across panels
+- **📱 Responsive Design**: Works seamlessly on desktop and mobile devices
 
-### Technical Features
-- **Enterprise-Grade Architecture**: Microservices with proper separation of concerns
-- **Scalable Queue System**: Redis-based job processing for AI generation
-- **JWT Authentication**: Secure user authentication and authorization
-- **Docker Containerization**: Complete containerized setup for all services
-- **Kubernetes Ready**: Production-ready K8s manifests with auto-scaling
-- **CI/CD Pipeline**: Automated testing, building, and deployment
-- **Security Scanning**: Integrated vulnerability scanning and code analysis
+### 🏗️ Technical Features
+- **🔧 Enterprise-Grade Architecture**: Microservices with proper separation of concerns
+- **📊 Scalable Queue System**: Redis-based job processing for AI generation tasks
+- **🔐 JWT Authentication**: Secure user authentication and authorization
+- **🐳 Docker Containerization**: Complete containerized setup for all services
+- **☸️ Kubernetes Ready**: Production-ready K8s manifests with auto-scaling
+- **🚀 CI/CD Pipeline**: Automated testing, building, and deployment
+- **🛡️ Security Scanning**: Integrated vulnerability scanning and code analysis
+- **📈 Performance Monitoring**: Built-in health checks and monitoring
+- **🔄 Automated Scripts**: One-command start/stop with comprehensive testing
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
 - **Docker & Docker Compose**: For containerized development
-- **Node.js 18+**: For local development
-- **PostgreSQL 15+**: Database
-- **Redis 7+**: Queue system
+- **Node.js 18+**: For local development (optional)
+- **Git**: For cloning the repository
 
 ### API Keys Required
 
-- **OpenAI API Key**: For GPT-4 story generation
-- **Midjourney API Key**: For image generation (optional for development)
-- **RunwayML API Key**: For image enhancement (optional for development)
+- **OpenAI API Key**: For GPT-4 story generation (required)
+- **Midjourney API Key**: For image generation (optional - mock service available)
+- **RunwayML API Key**: For image enhancement (optional - mock service available)
 
-### Development Setup
+### ⚡ One-Command Setup
 
 1. **Clone the repository**
    ```bash
@@ -44,68 +66,296 @@ A production-ready web application that uses AI services (GPT-4, Midjourney, Run
    cd comic-strip-generator
    ```
 
-2. **Setup environment**
-   ```bash
-   ./scripts/setup.sh
-   ```
-
-3. **Configure environment variables**
+2. **Configure environment variables**
    ```bash
    cp .env.example .env
    # Edit .env with your API keys and configuration
    ```
 
-4. **Start the application**
+3. **Start everything with one command**
    ```bash
    ./scripts/start.sh
    ```
 
-5. **Access the application**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:3001
-   - Database: localhost:5432
-   - Redis: localhost:6379
+That's it! The script will:
+- 🐳 Start Docker services (PostgreSQL, Redis)
+- 📊 Run database migrations
+- ⚙️ Start the backend server (port 3001)
+- 🎨 Start the frontend server (port 3000)  
+- 🧪 Run comprehensive health checks
+- ✅ Provide you with access URLs
+
+### 🎯 Application Access
+
+Once started, access your application at:
+- **🌐 Frontend**: http://localhost:3000 (Main application)
+- **🔧 Backend API**: http://localhost:3001 (REST API)
+- **📊 Health Check**: http://localhost:3001/api/health (Service status)
+
+### 🛑 Stopping the Application
+
+```bash
+./scripts/stop.sh
+```
+
+This will gracefully stop all services:
+- Frontend and Backend servers
+- Docker containers (PostgreSQL, Redis)
+- Clean up all processes and ports
+
+### 🧪 Testing All Services
+
+```bash
+./scripts/test-services.sh
+```
+
+Runs comprehensive tests for:
+- Docker container health
+- Port availability  
+- HTTP endpoints
+- Authentication system
+- Application test suites
 
 ## 🏗️ Architecture
 
-### System Overview
+### 🎯 System Overview
+
+Comic Strip Generator follows a modern microservices architecture with clear separation of concerns:
 
 ```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Frontend      │    │    Backend       │    │   AI Services   │
-│   (React)       │◄──►│   (Node.js)      │◄──►│   GPT-4         │
-└─────────────────┘    └──────────────────┘    │   Midjourney    │
-                                │               │   RunwayML      │
-                                ▼               └─────────────────┘
-┌─────────────────┐    ┌──────────────────┐    
-│   Database      │    │   Queue System   │    
-│   (PostgreSQL)  │◄──►│   (Redis/Bull)   │    
-└─────────────────┘    └──────────────────┘    
+                     🌐 USER INTERACTION
+                            │
+              ┌─────────────▼──────────────┐
+              │     Frontend (React)       │ ← 🎨 User Interface
+              │     Port: 3000             │
+              └─────────────┬──────────────┘
+                            │ HTTP/WebSocket
+              ┌─────────────▼──────────────┐
+              │    Backend (Node.js)       │ ← ⚙️ API & Business Logic
+              │     Port: 3001             │
+              └─────┬──────────────┬───────┘
+                    │              │
+          ┌─────────▼─────────┐   │   ┌──────▼───────┐
+          │   Database        │   │   │ Queue System │ ← 📊 Job Processing
+          │   (PostgreSQL)    │   │   │ (Redis/Bull) │
+          │   Port: 5432      │   │   │ Port: 6379   │
+          └───────────────────┘   │   └──────────────┘
+                                  │
+               ┌──────────────────▼──────────────────┐
+               │           AI Services              │ ← 🤖 AI Processing
+               ├─────────────────────────────────────┤
+               │  • GPT-4 (Story Generation)        │
+               │  • Midjourney (Image Creation)     │
+               │  • RunwayML (Image Enhancement)    │
+               └─────────────────────────────────────┘
 ```
 
-### Technology Stack
+### 🔄 Data Flow
 
-**Frontend**
-- React 18 with TypeScript
-- Tailwind CSS for styling
-- React DnD for drag-and-drop
-- Socket.IO for real-time updates
-- React Hook Form for form handling
+1. **User Request** → Frontend captures user input (story prompt)
+2. **API Call** → Frontend sends request to Backend API
+3. **Job Queue** → Backend creates AI generation jobs in Redis
+4. **AI Processing** → Workers process jobs using AI services
+5. **Real-time Updates** → WebSocket sends progress to Frontend
+6. **Data Storage** → Results stored in PostgreSQL
+7. **User Response** → Generated comic displayed to user
 
-**Backend**
-- Node.js with Express
-- TypeScript for type safety
-- Prisma ORM for database
-- Bull/Redis for job queues
-- JWT for authentication
-- Socket.IO for real-time communication
+### 💻 Technology Stack
 
-**Infrastructure**
-- PostgreSQL for data persistence
-- Redis for caching and queues
-- Docker for containerization
-- Kubernetes for orchestration
-- GitHub Actions for CI/CD
+#### **🎨 Frontend Layer**
+```
+React 18 + TypeScript
+├── 🎨 Tailwind CSS (Styling)
+├── 🖱️ React DnD (Drag & Drop)
+├── 📡 Socket.IO Client (Real-time)
+├── 📝 React Hook Form (Forms)
+├── 🧪 Jest + Testing Library (Testing)
+└── ⚡ Vite/CRA (Build Tool)
+```
+
+#### **⚙️ Backend Layer**
+```
+Node.js + Express + TypeScript
+├── 🗃️ Prisma ORM (Database)
+├── 📊 Bull Queue (Job Processing)
+├── 🔐 JWT (Authentication)
+├── 📡 Socket.IO (Real-time)
+├── 🛡️ Helmet (Security)
+├── 📝 Morgan (Logging)
+└── 🧪 Jest + Supertest (Testing)
+```
+
+#### **🗄️ Data Layer**
+```
+PostgreSQL 15 (Primary Database)
+├── 👤 Users & Authentication
+├── 📚 Comics & Panels
+├── 🎭 Templates & Layouts
+└── 📊 Generation Jobs
+
+Redis 7 (Cache & Queues)
+├── 📊 Job Queues
+├── 💾 Session Storage
+├── ⚡ Caching Layer
+└── 🔄 Rate Limiting
+```
+
+#### **🤖 AI Services Integration**
+```
+External AI APIs
+├── 🧠 OpenAI GPT-4
+│   ├── Story generation
+│   ├── Dialogue creation  
+│   └── Character development
+├── 🎨 Midjourney API
+│   ├── Panel artwork
+│   ├── Character images
+│   └── Background scenes
+└── ✨ RunwayML API
+    ├── Style transfer
+    ├── Image enhancement
+    └── Consistency checks
+```
+
+#### **🐳 Infrastructure Layer**
+```
+Containerization & Orchestration
+├── 🐳 Docker (Containerization)
+├── 🏗️ Docker Compose (Local Dev)
+├── ☸️ Kubernetes (Production)
+├── 🚀 GitHub Actions (CI/CD)
+└── 📊 Monitoring & Logging
+```
+
+## 🎮 Application Management
+
+### 🚀 Start/Stop Commands
+
+Comic Strip Generator includes comprehensive automation scripts for easy application management:
+
+#### **⚡ Quick Commands**
+
+```bash
+# 🚀 Start everything (one command setup)
+./scripts/start.sh
+
+# 🛑 Stop everything (graceful shutdown)
+./scripts/stop.sh
+
+# 🧪 Test all services (health check)
+./scripts/test-services.sh
+```
+
+#### **📋 What Each Script Does**
+
+**🚀 `./scripts/start.sh`** - Complete Application Startup
+```
+1. 🧹 Cleanup any existing processes
+2. 🐳 Start Docker services (PostgreSQL + Redis)
+3. ⏳ Wait for services to become healthy
+4. 📊 Run database migrations
+5. ⚙️ Start Backend server (Port 3001)
+6. 🎨 Start Frontend server (Port 3000)
+7. 🧪 Run comprehensive health checks
+8. ✅ Display access URLs and service status
+```
+
+**🛑 `./scripts/stop.sh`** - Graceful Application Shutdown
+```
+1. 🎨 Stop Frontend server gracefully
+2. ⚙️ Stop Backend server gracefully  
+3. 🧹 Clean up remaining Node processes
+4. 🐳 Stop Docker containers
+5. 🔍 Verify all ports are freed
+6. 📄 Clean up PID files
+```
+
+**🧪 `./scripts/test-services.sh`** - Comprehensive Service Testing
+```
+1. 🐳 Test Docker container health
+2. 🔌 Verify port availability (3000, 3001, 5432, 6379)
+3. 🌐 Test HTTP endpoints (Frontend, Backend API)
+4. 🔐 Test authentication system (Register/Login)
+5. ✅ Run application test suites
+6. 📊 Generate test report with pass/fail status
+```
+
+### 🎯 Service Status Monitoring
+
+#### **Quick Health Check**
+```bash
+# Check all services at once
+./scripts/test-services.sh
+
+# Check individual service health
+curl http://localhost:3001/api/health    # Backend health
+curl http://localhost:3000              # Frontend status  
+docker-compose ps                        # Container status
+```
+
+#### **Service URLs**
+| Service | URL | Purpose |
+|---------|-----|---------|
+| 🌐 **Frontend** | http://localhost:3000 | Main application interface |
+| 🔧 **Backend API** | http://localhost:3001 | REST API endpoints |
+| 📊 **Health Check** | http://localhost:3001/api/health | Service status monitoring |
+| 🗄️ **Database** | localhost:5432 | PostgreSQL (Docker internal) |
+| 🔄 **Redis** | localhost:6379 | Cache & queues (Docker internal) |
+
+### 🔧 Development Workflow
+
+#### **Daily Development**
+```bash
+# Morning startup
+./scripts/start.sh
+
+# Work on your features...
+# Frontend: http://localhost:3000
+# Backend: http://localhost:3001
+
+# Check everything is working
+./scripts/test-services.sh
+
+# End of day shutdown  
+./scripts/stop.sh
+```
+
+#### **Testing & Debugging**
+```bash
+# Run comprehensive tests
+./scripts/test-services.sh
+
+# View logs
+tail -f logs/frontend.log    # Frontend logs
+tail -f logs/backend.log     # Backend logs
+
+# Check service status
+docker-compose ps            # Container status
+lsof -i :3000               # Frontend port
+lsof -i :3001               # Backend port
+```
+
+#### **Troubleshooting**
+```bash
+# If services won't start
+./scripts/stop.sh           # Force cleanup
+docker system prune         # Clean Docker (optional)
+./scripts/start.sh          # Fresh start
+
+# If ports are blocked
+sudo lsof -i :3000         # Check what's using port
+sudo lsof -i :3001         # Check what's using port
+./scripts/stop.sh          # Should clean up automatically
+```
+
+### ⚡ Performance & Reliability
+
+- **🚀 Fast Startup**: Complete application ready in ~60 seconds
+- **🛡️ Error Handling**: Comprehensive error detection and recovery
+- **🔄 Auto-Recovery**: Automatic cleanup of failed processes
+- **📊 Health Monitoring**: Real-time service health verification
+- **⏱️ Timeout Management**: Prevents hanging processes
+- **🧪 Test Coverage**: End-to-end service validation
 
 ### API Endpoints
 
