@@ -3,13 +3,12 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 2020,
     sourceType: 'module',
-    project: './tsconfig.json',
+    project: './tsconfig.eslint.json',
   },
   plugins: ['@typescript-eslint'],
   extends: [
     'eslint:recommended',
-    '@typescript-eslint/recommended',
-    '@typescript-eslint/recommended-requiring-type-checking',
+    'plugin:@typescript-eslint/recommended',
   ],
   root: true,
   env: {
@@ -22,7 +21,27 @@ module.exports = {
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-    '@typescript-eslint/prefer-const': 'error',
+    'prefer-const': 'error',
     'no-console': 'warn',
   },
+  overrides: [
+    {
+      files: ['src/**/*.ts'],
+      excludedFiles: ['**/__tests__/**/*', '**/*.test.ts', '**/*.spec.ts'],
+      extends: ['plugin:@typescript-eslint/recommended-requiring-type-checking'],
+    },
+    {
+      files: ['**/__tests__/**/*', '**/*.test.ts', '**/*.spec.ts'],
+      env: {
+        jest: true,
+      },
+      rules: {
+        '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/no-unsafe-assignment': 'off',
+        '@typescript-eslint/no-unsafe-argument': 'off',
+        '@typescript-eslint/no-unsafe-member-access': 'off',
+        '@typescript-eslint/no-unsafe-call': 'off',
+      },
+    },
+  ],
 };
