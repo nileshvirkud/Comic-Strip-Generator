@@ -5,7 +5,7 @@ import { QueueJobData } from './types';
 import { emitToUser } from '../services/socket';
 
 export const processComicAssembly = async (job: Job<QueueJobData>) => {
-  const { comicId, userId, options } = job.data;
+  const { comicId, userId } = job.data;
   let jobRecord: any = null;
   
   try {

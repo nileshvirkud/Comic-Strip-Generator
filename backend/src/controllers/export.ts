@@ -21,7 +21,7 @@ export const exportComicValidation = [
 export const exportComic = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
-    const userId = req.user!.id;
+    const userId = req.user.id;
     const options: ExportOptions = req.body;
 
     logger.info('Starting comic export', { 

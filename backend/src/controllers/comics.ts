@@ -1,7 +1,7 @@
 import { Response, NextFunction } from 'express';
-import { body, param } from 'express-validator';
+import { body } from 'express-validator';
 import { prisma } from '../services/database';
-import { AuthenticatedRequest, ComicGenerationRequest } from '../types';
+import { AuthenticatedRequest } from '../types';
 import { ValidationError, NotFoundError, AuthorizationError } from '../utils/errors';
 import { logger } from '../utils/logger';
 import { addScriptGenerationJob } from '../services/queue';
@@ -27,7 +27,7 @@ export const generateComicValidation = [
 
 export const generateComic = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
-    const userId = req.user!.id;
+    const userId = req.user.id;
     // When using FormData with multer, all fields come as strings
     const { prompt, genre, style, panelCount: panelCountStr, templateId } = req.body;
     const panelCount = parseInt(panelCountStr, 10);
@@ -106,7 +106,7 @@ export const generateComic = async (req: AuthenticatedRequest, res: Response, ne
 export const getComic = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
-    const userId = req.user!.id;
+    const userId = req.user.id;
 
     const comic = await prisma.comics.findUnique({
       where: { id },
@@ -138,7 +138,7 @@ export const getComic = async (req: AuthenticatedRequest, res: Response, next: N
 
 export const getUserComics = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
-    const userId = req.user!.id;
+    const userId = req.user.id;
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const status = req.query.status as string;
@@ -185,7 +185,7 @@ export const getUserComics = async (req: AuthenticatedRequest, res: Response, ne
 export const getComicStatus = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
-    const userId = req.user!.id;
+    const userId = req.user.id;
 
     const comic = await prisma.comics.findUnique({
       where: { id },
@@ -246,7 +246,7 @@ export const getComicStatus = async (req: AuthenticatedRequest, res: Response, n
 export const updateComic = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
-    const userId = req.user!.id;
+    const userId = req.user.id;
     const updates = req.body;
 
     // Verify ownership
@@ -323,7 +323,7 @@ export const updateComic = async (req: AuthenticatedRequest, res: Response, next
 export const deleteComic = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
-    const userId = req.user!.id;
+    const userId = req.user.id;
 
     // Verify ownership
     const comic = await prisma.comics.findUnique({

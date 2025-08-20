@@ -53,7 +53,7 @@ export const processScriptGeneration = async (job: Job<QueueJobData>) => {
     job.progress(30);
 
     // Generate script using OpenAI
-    const scriptResult = await openaiService.generateScript(prompt!, genre, panelCount);
+    const scriptResult = await openaiService.generateScript(prompt, genre, panelCount);
 
     job.progress(70);
 

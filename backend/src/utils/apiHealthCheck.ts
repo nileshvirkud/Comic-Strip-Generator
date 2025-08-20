@@ -509,7 +509,6 @@ export class APIHealthChecker {
   }
 
   private calculateOverallHealth(services: ServiceHealthStatus[]): 'healthy' | 'unhealthy' | 'degraded' {
-    const healthyCount = services.filter(s => s.status === 'healthy').length;
     const unhealthyCount = services.filter(s => s.status === 'unhealthy').length;
     const degradedCount = services.filter(s => s.status === 'degraded').length;
 

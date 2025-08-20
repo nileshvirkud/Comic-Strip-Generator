@@ -1,14 +1,11 @@
 import puppeteer from 'puppeteer';
-import path from 'path';
-import fs from 'fs/promises';
-import { Comic, Panel, ExportOptions } from '../types';
+import { Comic, ExportOptions } from '../types';
 import { logger } from '../utils/logger';
 import { AppError } from '../utils/errors';
 
 export class ExportService {
   private async generateComicHTML(comic: Comic): Promise<string> {
     const panels = comic.panels.sort((a, b) => a.panelNumber - b.panelNumber);
-    const template = comic.template;
     
     const html = `
 <!DOCTYPE html>

@@ -20,17 +20,17 @@ export class AuthService {
       subscriptionTier: user.subscriptionTier,
     };
 
-    return jwt.sign(payload, config.jwt.secret as string, {
+    return jwt.sign(payload, config.jwt.secret , {
       expiresIn: '7d',
     });
   }
 
   static verifyToken(token: string): any {
-    return jwt.verify(token, config.jwt.secret as string);
+    return jwt.verify(token, config.jwt.secret );
   }
 
   static generateRefreshToken(userId: string): string {
-    return jwt.sign({ userId }, config.jwt.secret as string, {
+    return jwt.sign({ userId }, config.jwt.secret , {
       expiresIn: '30d',
     });
   }

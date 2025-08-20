@@ -1,5 +1,4 @@
 import Bull, { Queue, Job } from 'bull';
-import { redisClient } from './services/redis';
 import { config } from '../utils/config';
 import { logger } from '../utils/logger';
 import { QueueJobData } from './types';
@@ -78,7 +77,7 @@ const setupQueueProcessors = async () => {
 
 const setupQueueEventListeners = () => {
   // Script generation queue events
-  scriptGenerationQueue.on('completed', (job: Job, result: any) => {
+  scriptGenerationQueue.on('completed', (job: Job, _result: any) => {
     logger.info('Script generation completed', { jobId: job.id, comicId: job.data.comicId });
   });
 
@@ -91,7 +90,7 @@ const setupQueueEventListeners = () => {
   });
 
   // Image generation queue events
-  imageGenerationQueue.on('completed', (job: Job, result: any) => {
+  imageGenerationQueue.on('completed', (job: Job, _result: any) => {
     logger.info('Image generation completed', { jobId: job.id, comicId: job.data.comicId });
   });
 
@@ -104,7 +103,7 @@ const setupQueueEventListeners = () => {
   });
 
   // Comic assembly queue events
-  comicAssemblyQueue.on('completed', (job: Job, result: any) => {
+  comicAssemblyQueue.on('completed', (job: Job, _result: any) => {
     logger.info('Comic assembly completed', { jobId: job.id, comicId: job.data.comicId });
   });
 
