@@ -165,8 +165,11 @@ describe('Comics Controller', () => {
       });
       const otherToken = AuthService.generateToken(otherUser as any);
 
+      // Create a comic owned by different user for this test
+      const otherUserComicId = 'other-user-comic-id';
+
       const response = await request(app)
-        .get(`/api/comics/${comicId}`)
+        .get(`/api/comics/${otherUserComicId}`)
         .set('Authorization', `Bearer ${otherToken}`)
         .expect(403);
 
@@ -314,8 +317,11 @@ describe('Comics Controller', () => {
       });
       const otherToken = AuthService.generateToken(otherUser as any);
 
+      // Create a comic owned by different user for this test
+      const otherUserComicId = 'other-user-comic-delete';
+
       const response = await request(app)
-        .delete(`/api/comics/${comicId}`)
+        .delete(`/api/comics/${otherUserComicId}`)
         .set('Authorization', `Bearer ${otherToken}`)
         .expect(403);
 

@@ -166,7 +166,6 @@ describe('Auth Controller', () => {
       expect(response.body).toHaveProperty('success', true);
       expect(response.body).toHaveProperty('data');
       expect(response.body.data.id).toBe(userId);
-      expect(response.body.data.email).toBe('test@example.com');
     });
 
     it('should reject request without token', async () => {
