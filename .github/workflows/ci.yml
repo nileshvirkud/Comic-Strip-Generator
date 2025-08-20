@@ -163,8 +163,8 @@ jobs:
         echo "REDIS_URL=redis://redis:6379" >> .env
         echo "JWT_SECRET=test-secret" >> .env
         echo "OPENAI_API_KEY=test-key" >> .env
-        docker-compose -f docker-compose.yml up -d --build
+        docker compose -f docker-compose.yml up -d --build
         sleep 30
-        docker-compose ps
-        docker-compose logs
-        docker-compose down
+        docker compose ps
+        docker compose logs
+        docker compose down
