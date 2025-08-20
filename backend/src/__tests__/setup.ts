@@ -2,15 +2,138 @@ import { PrismaClient } from '@prisma/client';
 
 // Mock environment variables for tests
 process.env.NODE_ENV = 'test';
-process.env.DATABASE_URL = 'postgresql://postgres:postgres@localhost:5432/comic_strip_generator_dev';
+process.env.DATABASE_URL = 'postgresql://postgres:postgres@localhost:5432/comic_strip_generator_test';
 process.env.REDIS_URL = 'redis://localhost:6379';
 process.env.JWT_SECRET = 'test-secret';
 process.env.OPENAI_API_KEY = 'test-openai-key';
 
+// Mock Prisma Client to avoid database connection issues in CI
+jest.mock('@prisma/client', () => {
+  return {
+    PrismaClient: jest.fn().mockImplementation(() => ({
+      $connect: jest.fn().mockResolvedValue(undefined),
+      $disconnect: jest.fn().mockResolvedValue(undefined),
+      user: {
+        create: jest.fn().mockImplementation((data) => 
+          Promise.resolve({
+            id: 'test-user-id',
+            email: data.data.email,
+            passwordHash: data.data.passwordHash,
+            subscriptionTier: data.data.subscriptionTier || 'free',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          })
+        ),
+        findUnique: jest.fn().mockResolvedValue({
+          id: 'test-user-id',
+          email: 'test@example.com',
+          passwordHash: '$2b$10$test',
+          subscriptionTier: 'free',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }),
+        findMany: jest.fn().mockResolvedValue([]),
+        update: jest.fn(),
+        delete: jest.fn(),
+        deleteMany: jest.fn().mockResolvedValue({}),
+      },
+      comics: {
+        create: jest.fn().mockImplementation((data) => 
+          Promise.resolve({
+            id: 'test-comic-id',
+            ...data.data,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          })
+        ),
+        findUnique: jest.fn().mockResolvedValue({
+          id: 'test-comic-id',
+          userId: 'test-user-id',
+          title: 'Test Comic',
+          prompt: 'Test prompt',
+          status: 'COMPLETED',
+          templateId: 'test-template-id',
+          metadata: {},
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }),
+        findMany: jest.fn().mockResolvedValue([]),
+        update: jest.fn(),
+        delete: jest.fn(),
+        deleteMany: jest.fn().mockResolvedValue({}),
+      },
+      panel: {
+        create: jest.fn().mockResolvedValue({
+          id: 'test-panel-id',
+          comicId: 'test-comic-id',
+          panelNumber: 1,
+          imageUrl: null,
+          dialog: '',
+          position: {},
+          characters: [],
+          sceneDescription: 'Test scene',
+          midjourneyPrompt: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }),
+        findUnique: jest.fn(),
+        findMany: jest.fn().mockResolvedValue([]),
+        update: jest.fn(),
+        delete: jest.fn(),
+        deleteMany: jest.fn().mockResolvedValue({}),
+      },
+      template: {
+        create: jest.fn().mockImplementation((data) => 
+          Promise.resolve({
+            id: 'test-template-id',
+            name: data.data.name,
+            layoutConfig: data.data.layoutConfig,
+            thumbnailUrl: data.data.thumbnailUrl,
+            panelCount: data.data.panelCount,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          })
+        ),
+        findUnique: jest.fn().mockResolvedValue({
+          id: 'test-template-id',
+          name: 'Test Template',
+          layoutConfig: { rows: 2, columns: 2 },
+          thumbnailUrl: 'https://example.com/thumb.jpg',
+          panelCount: 4,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }),
+        findMany: jest.fn().mockResolvedValue([]),
+        update: jest.fn(),
+        delete: jest.fn(),
+        deleteMany: jest.fn().mockResolvedValue({}),
+      },
+      generationJob: {
+        create: jest.fn().mockResolvedValue({
+          id: 'test-job-id',
+          comicId: 'test-comic-id',
+          jobType: 'SCRIPT',
+          status: 'PENDING',
+          aiService: 'openai',
+          progress: 0,
+          result: null,
+          error: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }),
+        findUnique: jest.fn(),
+        findMany: jest.fn().mockResolvedValue([]),
+        update: jest.fn(),
+        delete: jest.fn(),
+        deleteMany: jest.fn().mockResolvedValue({}),
+      },
+    })),
+  };
+});
+
 const prisma = new PrismaClient();
 
 beforeAll(async () => {
-  // Clean up database before tests
   await prisma.$connect();
 });
 
