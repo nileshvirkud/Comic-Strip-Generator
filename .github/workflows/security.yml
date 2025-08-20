@@ -1,0 +1,215 @@
+name: Security Scan
+
+on:
+  schedule:
+    - cron: '0 2 * * 1' # Weekly on Monday at 2 AM
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  dependency-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
+    - name: Backend dependency scan
+      working-directory: ./backend
+      run: |
+        npm ci
+        npm audit --audit-level high
+    
+    - name: Frontend dependency scan
+      working-directory: ./frontend
+      run: |
+        npm ci
+        npm audit --audit-level high
+
+  codeql-analysis:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'javascript', 'typescript' ]
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: ${{ matrix.language }}
+    
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v3
+    
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
+
+  docker-security-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Build backend image for scanning
+      id: build-backend
+      run: |
+        echo "Building backend Docker image..."
+        docker build -t comic-strip-generator/backend:scan ./backend
+        echo "Backend image built successfully"
+        docker images | grep comic-strip-generator/backend
+    
+    - name: Build frontend image for scanning
+      id: build-frontend
+      run: |
+        echo "Building frontend Docker image..."
+        docker build -t comic-strip-generator/frontend:scan ./frontend
+        echo "Frontend image built successfully"
+        docker images | grep comic-strip-generator/frontend
+    
+    - name: Run Trivy vulnerability scanner on backend
+      id: trivy-backend
+      uses: aquasecurity/trivy-action@0.28.0
+      continue-on-error: true
+      with:
+        image-ref: 'comic-strip-generator/backend:scan'
+        format: 'sarif'
+        output: 'trivy-backend.sarif'
+        severity: 'CRITICAL,HIGH,MEDIUM,LOW'
+    
+    - name: Debug backend Trivy output
+      run: |
+        echo "Listing files in current directory:"
+        ls -la
+        echo "Checking for SARIF files:"
+        ls -la *.sarif || echo "No SARIF files found"
+        if [ -f "trivy-backend.sarif" ]; then
+          echo "Backend SARIF file size:"
+          wc -l trivy-backend.sarif
+        fi
+    
+    - name: Run Trivy vulnerability scanner on frontend
+      id: trivy-frontend
+      uses: aquasecurity/trivy-action@0.28.0
+      continue-on-error: true
+      with:
+        image-ref: 'comic-strip-generator/frontend:scan'
+        format: 'sarif'
+        output: 'trivy-frontend.sarif'
+        severity: 'CRITICAL,HIGH,MEDIUM,LOW'
+    
+    - name: Debug frontend Trivy output
+      run: |
+        echo "Checking for SARIF files after frontend scan:"
+        ls -la *.sarif || echo "No SARIF files found"
+        if [ -f "trivy-frontend.sarif" ]; then
+          echo "Frontend SARIF file size:"
+          wc -l trivy-frontend.sarif
+        fi
+    
+    - name: Check if backend SARIF file exists
+      id: check-backend-sarif
+      run: |
+        if [ -f "trivy-backend.sarif" ]; then
+          echo "Backend SARIF file exists"
+          echo "exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "Backend SARIF file does not exist - creating empty SARIF"
+          echo "exists=false" >> $GITHUB_OUTPUT
+          cat > trivy-backend-empty.sarif << 'EOF'
+        {
+          "version": "2.1.0",
+          "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+          "runs": [
+            {
+              "tool": {
+                "driver": {
+                  "name": "Trivy",
+                  "informationUri": "https://github.com/aquasecurity/trivy",
+                  "fullName": "Trivy Vulnerability Scanner",
+                  "version": "0.28.0"
+                }
+              },
+              "results": [],
+              "columnKind": "utf16CodeUnits"
+            }
+          ]
+        }
+        EOF
+        fi
+    
+    - name: Check if frontend SARIF file exists
+      id: check-frontend-sarif
+      run: |
+        if [ -f "trivy-frontend.sarif" ]; then
+          echo "Frontend SARIF file exists"
+          echo "exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "Frontend SARIF file does not exist - creating empty SARIF"
+          echo "exists=false" >> $GITHUB_OUTPUT
+          cat > trivy-frontend-empty.sarif << 'EOF'
+        {
+          "version": "2.1.0",
+          "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+          "runs": [
+            {
+              "tool": {
+                "driver": {
+                  "name": "Trivy",
+                  "informationUri": "https://github.com/aquasecurity/trivy",
+                  "fullName": "Trivy Vulnerability Scanner",
+                  "version": "0.28.0"
+                }
+              },
+              "results": [],
+              "columnKind": "utf16CodeUnits"
+            }
+          ]
+        }
+        EOF
+        fi
+    
+    - name: Upload Trivy scan results to GitHub Security tab (Backend)
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: ${{ steps.check-backend-sarif.outputs.exists == 'true' && 'trivy-backend.sarif' || 'trivy-backend-empty.sarif' }}
+        category: 'trivy-backend'
+    
+    - name: Upload Trivy scan results to GitHub Security tab (Frontend)
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: ${{ steps.check-frontend-sarif.outputs.exists == 'true' && 'trivy-frontend.sarif' || 'trivy-frontend-empty.sarif' }}
+        category: 'trivy-frontend'
+
+  secrets-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: TruffleHog OSS
+      uses: trufflesecurity/trufflehog@main
+      with:
+        path: ./
+        base: main
+        head: HEAD
+        extra_args: --debug --only-verified

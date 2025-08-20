@@ -1,0 +1,60 @@
+# Multi-stage build for production
+FROM node:18-alpine AS builder
+
+# Install OpenSSL for Prisma
+RUN apk add --no-cache openssl openssl-dev
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY tsconfig.json ./
+
+# Install all dependencies (including dev for build)
+RUN npm ci
+
+# Copy source code and Prisma schema
+COPY src/ ./src/
+COPY prisma/ ./prisma/
+
+# Generate Prisma client and build the application
+RUN npx prisma generate
+RUN npm run build
+
+# Production stage
+FROM node:18-alpine
+
+# Install OpenSSL for Prisma
+RUN apk add --no-cache openssl openssl-dev
+
+WORKDIR /app
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nextjs -u 1001
+
+# Copy package files
+COPY package*.json ./
+COPY prisma/ ./prisma/
+
+# Install production dependencies only
+RUN npm ci --omit=dev && npm cache clean --force
+
+# Generate Prisma client for production
+RUN npx prisma generate
+
+# Copy built application
+COPY --from=builder --chown=nextjs:nodejs /app/dist ./dist
+
+# Create uploads directory
+RUN mkdir -p uploads && chown nextjs:nodejs uploads
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "http.get('http://localhost:${PORT:-3001}/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }).on('error', () => { process.exit(1); });"
+
+USER nextjs
+
+EXPOSE 3001
+
+CMD ["node", "dist/index.js"]

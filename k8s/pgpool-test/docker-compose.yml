@@ -1,0 +1,59 @@
+
+version: '3.8'
+
+services:
+  pgpool:
+    image: bitnami/pgpool:latest
+    container_name: my-pgpool-proxy
+    networks:
+      - my-network # Connect to the same network as PostgreSQL
+    environment:
+      # --- Pgpool-II Configuration ---
+      # Backend Nodes (PostgreSQL servers Pgpool-II will connect to)
+      # Format: node_id:hostname:port:weight:role
+      # 0: pg-0:5432:0.5:primary (assuming 'pg-0' is your primary PostgreSQL container name)
+      # 1: pg-1:5432:0.5:standby (assuming 'pg-1' is your replica PostgreSQL container name)
+      PGPOOL_BACKEND_NODES: "0:my-postgres-db:5432:1:primary" # Adjust based on your setup
+
+      # Pgpool-II Username and Password (for connecting *to* Pgpool-II itself)
+      PGPOOL_USERNAME: pgpool_user # Your desired Pgpool-II connection username
+      PGPOOL_PASSWORD: Allr1ght # Your desired Pgpool-II connection password
+
+      # PostgreSQL admin user/password (Pgpool uses this to manage backends)
+      # This should be the 'postgres' user credentials you set for your PostgreSQL DB
+      PGPOOL_POSTGRES_USERNAME: postgres
+      PGPOOL_POSTGRES_PASSWORD: Allr1ght # Matches POSTGRES_PASSWORD of your DB
+
+      # For streaming replication health checks (if applicable)
+      PGPOOL_SR_CHECK_USER: postgres
+      PGPOOL_SR_CHECK_PASSWORD: Allr1ght # Matches POSTGRES_PASSWORD of your DB
+
+      # Pgpool-II Admin User (for `pcp` commands)
+      PGPOOL_ADMIN_USERNAME: pgpool_admin
+      PGPOOL_ADMIN_PASSWORD: Allr1ght # Set a secure password
+
+      # Enable Features
+      PGPOOL_ENABLE_LOAD_BALANCING: "yes" # Enable read query load balancing
+      # PGPOOL_ENABLE_TLS: "yes" # Uncomment and configure if using SSL/TLS
+
+    ports:
+      - "5432:5432" # Map Pgpool-II's port to your host machine's port
+
+  my-postgres-db:
+    image: postgres:latest
+    container_name: my-postgres-db
+    networks:
+      - my-network
+    environment:
+      POSTGRES_PASSWORD: Allr1ght  # This matches the PGPOOL_POSTGRES_PASSWORD above
+      POSTGRES_DB: comicsdb
+    volumes:
+      - postgres-data:/var/lib/postgresql/data # Persist data
+
+volumes:
+  postgres-data:
+
+networks:
+  my-network:
+    driver: bridge
+

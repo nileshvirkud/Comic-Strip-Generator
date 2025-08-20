@@ -1,0 +1,50 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@300;400;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900 font-sans;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none;
+  }
+  
+  .btn-primary {
+    @apply btn bg-primary-600 text-white hover:bg-primary-700;
+  }
+  
+  .btn-secondary {
+    @apply btn bg-gray-100 text-gray-900 hover:bg-gray-200;
+  }
+  
+  .btn-outline {
+    @apply btn border border-gray-300 bg-white text-gray-700 hover:bg-gray-50;
+  }
+  
+  .comic-panel {
+    @apply border-4 border-black bg-white rounded-lg shadow-lg relative overflow-hidden;
+  }
+  
+  .speech-bubble {
+    @apply bg-white border-2 border-black rounded-full p-2 relative;
+  }
+  
+  .speech-bubble::after {
+    content: '';
+    @apply absolute w-0 h-0 border-l-[10px] border-r-[10px] border-t-[15px] border-l-transparent border-r-transparent border-t-white;
+    bottom: -13px;
+    left: 20px;
+  }
+  
+  .speech-bubble::before {
+    content: '';
+    @apply absolute w-0 h-0 border-l-[12px] border-r-[12px] border-t-[17px] border-l-transparent border-r-transparent border-t-black;
+    bottom: -15px;
+    left: 18px;
+  }
+}
