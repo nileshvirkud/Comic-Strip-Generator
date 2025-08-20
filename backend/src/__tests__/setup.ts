@@ -24,14 +24,7 @@ jest.mock('@prisma/client', () => {
             updatedAt: new Date(),
           })
         ),
-        findUnique: jest.fn().mockResolvedValue({
-          id: 'test-user-id',
-          email: 'test@example.com',
-          passwordHash: '$2b$10$test',
-          subscriptionTier: 'free',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        }),
+        findUnique: jest.fn().mockResolvedValue(null), // Default to null to allow registration
         findMany: jest.fn().mockResolvedValue([]),
         update: jest.fn(),
         delete: jest.fn(),
@@ -46,20 +39,45 @@ jest.mock('@prisma/client', () => {
             updatedAt: new Date(),
           })
         ),
-        findUnique: jest.fn().mockResolvedValue({
-          id: 'test-comic-id',
-          userId: 'test-user-id',
-          title: 'Test Comic',
-          prompt: 'Test prompt',
-          status: 'COMPLETED',
-          templateId: 'test-template-id',
-          metadata: {},
-          createdAt: new Date(),
-          updatedAt: new Date(),
+        createMany: jest.fn().mockImplementation((data) => 
+          Promise.resolve({
+            count: data.data.length
+          })
+        ),
+        findUnique: jest.fn().mockImplementation((query) => {
+          if (query.where.id === 'non-existent-id' || deletedItems.has(query.where.id)) {
+            return Promise.resolve(null);
+          }
+          // Simulate different ownership scenarios
+          const userId = query.where.id === 'other-user-comic' ? 'other-user-id' : 'test-user-id';
+          return Promise.resolve({
+            id: query.where.id || 'test-comic-id',
+            userId: userId,
+            title: 'Test Comic',
+            prompt: 'Test prompt',
+            status: 'COMPLETED',
+            templateId: 'test-template-id',
+            metadata: {},
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
         }),
         findMany: jest.fn().mockResolvedValue([]),
         update: jest.fn(),
-        delete: jest.fn(),
+        delete: jest.fn().mockImplementation((query) => {
+          deletedItems.add(query.where.id);
+          return Promise.resolve({
+            id: query.where.id,
+            userId: 'test-user-id',
+            title: 'Test Comic',
+            prompt: 'Test prompt',
+            status: 'COMPLETED',
+            templateId: 'test-template-id',
+            metadata: {},
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+        }),
         deleteMany: jest.fn().mockResolvedValue({}),
       },
       panel: {
@@ -131,10 +149,18 @@ jest.mock('@prisma/client', () => {
   };
 });
 
+// Track deleted items for mocking
+const deletedItems = new Set();
+
 const prisma = new PrismaClient();
 
 beforeAll(async () => {
   await prisma.$connect();
+});
+
+beforeEach(() => {
+  // Clear deleted items before each test
+  deletedItems.clear();
 });
 
 beforeEach(async () => {
